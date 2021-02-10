@@ -1,0 +1,5 @@
+﻿name: ZhaoDice
+main: zhao.dice.plugin.MiraiPluginLoader
+version: 0.1.0
+author: 赵怡然
+info: Mirai赵骰模块

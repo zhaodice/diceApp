@@ -1,0 +1,13 @@
+将mirai console的
+internal class JvmPluginClassLoader(
+    val file: File,
+    parent: ClassLoader?,
+    val classLoaders: Collection<JvmPluginClassLoader>,
+) : URLClassLoader(arrayOf(file.toURI().toURL()), parent)
+修改为
+internal class JvmPluginClassLoader(
+    val file: File,
+    parent: ClassLoader?,
+    val classLoaders: Collection<JvmPluginClassLoader>,
+) : BaseDexClassLoader(file.absolutePath,file.parentFile,null, parent) {
+即可支持安卓系统

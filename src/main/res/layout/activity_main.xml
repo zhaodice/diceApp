@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/settings_layout"
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/notice"
+            android:text="@string/notice_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/selfuintitle"
+                android:layout_width="match_parent"
+                android:text="@string/currentUin"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/selfuin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_openDice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:switchMinWidth="50dp"
+            android:text="@string/switch_openDice" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_publicMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:switchMinWidth="10dp"
+            android:text="@string/switch_publicMode" />
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_keyAutoReply"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/switch_keyAutoReply" />
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_bootStart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/switch_bootStart" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/customConfig" />
+
+        <Spinner
+            android:id="@+id/spinner_values"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/editText_editValue"
+                android:layout_weight="4"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:autofillHints=""
+                android:ems="10"
+                android:inputType="textMultiLine"
+                tools:ignore="LabelFor" />
+            <Button
+                android:id="@+id/saveData"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/saveData" />
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/autoLogin"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:tag="enable"
+                android:text="@string/autoLogin" />
+            <Button
+                android:id="@+id/changeQQ"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/changeQQ" />
+        </LinearLayout>
+<!--
+        <Button
+            android:tag="enable"
+            android:id="@+id/startMirai"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/startMirai" />
+-->
+
+
+        <Button
+            android:tag="enable"
+            android:id="@+id/consoleEnter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/consoleEnter" />
+        <Button
+            android:tag="enable"
+            android:id="@+id/reboot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/reboot" />
+    </LinearLayout>
+</ScrollView>
