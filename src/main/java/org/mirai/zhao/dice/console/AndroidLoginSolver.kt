@@ -4,8 +4,6 @@ import android.R.attr.data
 import android.app.PendingIntent
 import android.content.Intent
 import android.util.Log
-import androidx.core.app.ActivityCompat.startActivityForResult
-import androidx.core.app.NotificationManagerCompat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancel
 import net.mamoe.mirai.Bot

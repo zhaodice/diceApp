@@ -1,15 +1,12 @@
 package org.mirai.zhao.dice.activity
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import org.mirai.zhao.dice.AppContext
 import org.mirai.zhao.dice.R
-import org.mirai.zhao.dice.console.ConsoleService
-import org.mirai.zhao.dice.file.FileService
 import org.mirai.zhao.dice.file.TextFileOperator
 import java.io.File
 import java.lang.StringBuilder
@@ -23,9 +20,8 @@ class AccountsActivity : AppCompatActivity() {
             val arraylist=ArrayList<String>()
             val accounts_text= TextFileOperator.read(autoLoginFile)
             val accounts = accounts_text.split("\n")
-            for (i in 0 until accounts.size) {
-                val account = accounts[i]
-                val accountInfo = account.split(" ")
+            for (element in accounts) {
+                val accountInfo = element.split(" ")
                 if (accountInfo.size >= 2) {
                     arraylist.add(accountInfo[0])
                 }

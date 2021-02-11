@@ -15,6 +15,7 @@ class AppContext : Application() {
     var dataStorage: String? = null
     val privateStorage: String? = null
     override fun onCreate() {
+        System.setProperty("mirai.slider.captcha.supported","1")
         val crashHandler = CrashHandler.getInstance()
         crashHandler.init()
         //dataStorage = getExternalFilesDir(null).toString()

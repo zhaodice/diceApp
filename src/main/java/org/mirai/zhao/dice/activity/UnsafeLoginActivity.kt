@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.webkit.*
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.GlobalScope
@@ -19,6 +20,7 @@ class UnsafeLoginActivity : AppCompatActivity() {
     private lateinit var unsafeLoginWeb : WebView
     private lateinit var refreshUnsafeWeb: SwipeRefreshLayout
     private lateinit var forceStopUnsafeLogin:Button
+    private lateinit var notice:TextView
     /*companion object{
         private const val disguisedUserAgent =
                 "Mozilla/5.0 (Linux; Android 5.1; vivo X6Plus D Build/LMY47I; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045330 Mobile Safari/537.36 V1_AND_SQ_7.1.0_0_TIM_D TIM/3.0.0.2858 QQ/6.5.5  NetType/WIFI WebP/0.3.0 Pixel/1080"
@@ -30,6 +32,7 @@ class UnsafeLoginActivity : AppCompatActivity() {
         refreshUnsafeWeb=findViewById(R.id.refresh_unsafe_web)
         unsafeLoginWeb=findViewById(R.id.unsafe_login_web)
         forceStopUnsafeLogin=findViewById(R.id.forceStopUnsafeLogin)
+        notice=findViewById(R.id.notice)
         forceStopUnsafeLogin.setOnClickListener{
             authFinish("")
         }
@@ -56,13 +59,20 @@ class UnsafeLoginActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebView() {
         //滑块验证码js注入，便于获取ticks
-        val insertJavaScript ="!(()=>{let prompt=window.prompt;function processUrl(url){let prefix=\"jsbridge://CAPTCHA/onVerifyCAPTCHA?p=\"if(url.startsWith(prefix)){let json=url.substring(prefix.length);for(let i=json.length;i--;i>0){let j=json.substr(0,i)console.log(j);try{let content=decodeURIComponent(j);let obj=JSON.parse(content);console.log(obj);window.miraiSeleniumComplete=content;prompt(\"MiraiSelenium - ticket\",obj.ticket)break}catch(ignore){}}return true}return false}(()=>{let desc=Object.getOwnPropertyDescriptor(Image.prototype,\"src\");Object.defineProperty(Image.prototype,\"src\",{get:desc.get,set(v){if(processUrl(v))return;desc.set.call(this,v)}})})();(()=>{let desc=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,\"src\");Object.defineProperty(HTMLIFrameElement.prototype,\"src\",{get:desc.get,set(v){if(processUrl(v))return;desc.set.call(this,v)}})})()})()"
         unsafeLoginWeb.webViewClient = object : WebViewClient() {
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 if (url != null && view != null) {
+
+                    println("webview:$url")
                     if (url.startsWith("https://ssl.captcha.qq.com/template/wireless_mqq_captcha.html")) {//滑块验证码
-                        view.postDelayed({ view.evaluateJavascript(insertJavaScript, null) }, 1200)
+                        notice.text = getString(R.string.slidNotice)
+                        //ToastUtils.show(this@UnsafeLoginActivity,"滑的时候注意了，尽可能在图案里滑，别滑到下面的空白区域，否则会很不丝滑。",Toast.LENGTH_LONG)
                     }
+                    println("界面加载完毕！注入JS...")
+                    view.evaluateJavascript("""
+                                    mqq.invoke = function(a,b,c){ return bridge.invoke(a,b,JSON.stringify(c))}
+                                """.trimIndent()) {}
                 }
                 super.onPageFinished(view, url)
             }
@@ -105,7 +115,7 @@ class UnsafeLoginActivity : AppCompatActivity() {
 //                return super.shouldInterceptRequest(view, request)
 //            }
         }
-
+        unsafeLoginWeb.addJavascriptInterface(Bridge(), "bridge")
         unsafeLoginWeb.webChromeClient = object : WebChromeClient() {
             override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
                 // 按下回到qq按钮之后会打印这句话，于是就用这个解决了。。。。
@@ -174,5 +184,16 @@ class UnsafeLoginActivity : AppCompatActivity() {
             }
         }
         return false
+    }
+    inner class Bridge {
+        @JavascriptInterface
+        fun invoke(cls: String?, method: String?, data: String?) {
+            if (data != null) {
+                val jsData = JSONObject(data)
+                if (method == "onVerifyCAPTCHA") {
+                    authFinish(jsData.getString("ticket"))
+                }
+            }
+        }
     }
 }

@@ -105,7 +105,6 @@
             android:id="@+id/protocol_watch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="@string/watch" />
 
         <RadioButton
@@ -118,6 +117,7 @@
             android:id="@+id/protocol_android_phone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             android:text="@string/android_phone" />
     </RadioGroup>
 

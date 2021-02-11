@@ -20,7 +20,7 @@ import org.mirai.zhao.dice.console.ConsoleService
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var loginViewModel: LoginViewModel
-    private var miraiProtocol:BotConfiguration.MiraiProtocol=BotConfiguration.MiraiProtocol.ANDROID_WATCH
+    private var miraiProtocol:BotConfiguration.MiraiProtocol=BotConfiguration.MiraiProtocol.ANDROID_PHONE
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
