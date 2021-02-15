@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var button_changeQQ: Button
     private lateinit var reboot: Button
     private lateinit var button_autoLogin: Button
+    private var isSelectAccountsShowing=false
     val storage //存储工具类（分离自cocHelper）
             : JsonConfigOperator by lazy{ JsonConfigOperator(AppContext.zhaoDiceData) }
     lateinit var qqArray //qq信息数组
@@ -67,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                 //spinner_values_text.add(new Sentences_them("PATH_DRAW", "（×）自定义牌堆路径，默认值 draw,重启生效"));
                 //spinner_values_text.add(new Sentences_them("PATH_PICTURES", "（×）自定义图片路径，默认值 pictures,重启生效"));
                 //spinner_values_text.add(new Sentences_them("PATH_VOICE", "（×）自定义语音路径，默认值 sound_robot,重启生效"));
-                spinner_values_text.add(Sentences_them("REPLY", "（×）模糊词回复\n一行一个 关键词/内容 例:\n赵怡然/天才!"))
+                //spinner_values_text.add(Sentences_them("REPLY", "（×）模糊词回复\n一行一个 关键词/内容 例:\n赵怡然/天才!"))
                 spinner_values_text.add(Sentences_them("REPLY_EQU", "（×）匹配词回复\n一行一个 关键词/内容 例:\n赵怡然/天才!"))
                 spinner_values_text.add(Sentences_them("DICE_DISMISS_AGREE", "（dismiss）dismiss退群成功"))
                 spinner_values_text.add(Sentences_them("DICE_DISMISS_DENIED", "（dismiss）dismiss退群失败-没有权限"))
@@ -276,48 +277,6 @@ class MainActivity : AppCompatActivity() {
             val i = Intent(view.context, LoginActivity::class.java)
             startActivityForResult(i, 0)
         }
-        /*
-        button_autoLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String content=null;
-                try {
-                    content= FileService.read(autoLoginFile);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if(content==null){
-                    try {
-                        autoLoginFile.createNewFile();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                ContentInputer.OpenDialog(MainActivity.this, getString(R.string.autoLoginDescription), content, new ContentInputer.OnContentInputerClosedListener() {
-                    @Override
-                    public void onSave(String content) {
-                        try {
-                            FileService.save(autoLoginFile,content);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onCancel() {
-
-                    }
-                });
-            }
-        });*/
-        /*
-        button_startMirai.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(PACKAGE_MIRAI);
-                startActivity(LaunchIntent);
-            }
-        });*/
         button_changeQQ.setOnClickListener {
             doShowQQSelection(this@MainActivity)
         }
@@ -339,6 +298,9 @@ class MainActivity : AppCompatActivity() {
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+        checkAndFresh()
+    }
+    private fun checkAndFresh(){
         //检测是否有读写权限
         try{
             val file=File(AppContext.miraiDir,"check")
@@ -351,9 +313,7 @@ class MainActivity : AppCompatActivity() {
         }catch (e:Throwable){
             doRequirePermission()
         }
-
-    }// The name of the process that this object is associated with.
-
+    }
     /**
      * 获取Android设备中所有正在运行的App
      */
@@ -454,15 +414,16 @@ class MainActivity : AppCompatActivity() {
                     for (i in qqs.indices) {
                         qqArray[i] = qqs[i]
                     }
-                    if(selfuin==null)
-                        doShowQQSelection(this)
+                    if(selfuin==null) {
+                        selfuin = qqArray[0]
+                        shareData.edit().putString("selfuin", selfuin).apply()
+                    }
                 } else {
                     //才一个骰娘号，不让选择
                     selfuin = qqs[0]
                     button_changeQQ.isEnabled = false
                 }
                 status_readDataOK = true
-                doInterfaceUpdate()
             } else {
                 showAlterDialog("你需要登陆骰娘账号作为骰娘才能正常使用，请点击【骰娘账号管理】")
             }
@@ -505,17 +466,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun doShowQQSelection(context: MainActivity) {
         if(this::qqArray.isInitialized) {
-            val builder = AlertDialog.Builder(context, android.R.style.Theme_Material_Light_Dialog)
-            //builder.setIcon(R.drawable.ic_launcher);
-            builder.setTitle("请选择已经登陆的骰娘QQ号")
-            //    指定下拉列表的显示数据
-            //    设置一个下拉的列表选择项
-            builder.setItems(qqArray) { _, which ->
-                context.selfuin = qqArray[which]
-                shareData.edit().putString("selfuin", selfuin).apply()
-                doInterfaceUpdate()
+            if(!isSelectAccountsShowing) {
+                synchronized(this){
+                    val builder = AlertDialog.Builder(context, android.R.style.Theme_Material_Light_Dialog)
+                    builder.setTitle("请选择已经登陆的骰娘QQ号")
+                    builder.setItems(qqArray) { _, which ->
+                        context.selfuin = qqArray[which]
+                        shareData.edit().putString("selfuin", selfuin).apply()
+                        doInterfaceUpdate()
+                        isSelectAccountsShowing = false
+                    }
+                    builder.setOnCancelListener {
+                        isSelectAccountsShowing = false
+                    }
+                    builder.show()
+                    isSelectAccountsShowing = true
+                }
             }
-            builder.show()
         }else{
             Toast.makeText(this,"没有更多账号可以切换",Toast.LENGTH_SHORT).show()
         }

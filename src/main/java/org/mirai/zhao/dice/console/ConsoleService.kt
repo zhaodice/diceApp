@@ -165,6 +165,9 @@ class ConsoleService : Service() {
                     UpdateService.autoUpdate(newPluginFile())
                     ConsoleTerminalSettings.noConsole=true
                     ConsoleTerminalSettings.noAnsi=true
+                    BotConfiguration {
+                        enableContactCache()
+                    }
                     MiraiConsoleTerminalLoader.startAsDaemon().apply {
                         androidMiraiLogger=mainLogger
                     }
