@@ -19,7 +19,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
-# 配置目前还有点问题无法使用
 -keepattributes *Annotation*,Signature
 
 -keepclasseswithmembers class * extends java.lang.Exception { *;}
