@@ -166,7 +166,7 @@ class ConsoleService : Service() {
                     ConsoleTerminalSettings.noConsole=true
                     ConsoleTerminalSettings.noAnsi=true
                     MiraiConsoleTerminalLoader.startAsDaemon().apply {
-                        androidMiraiLogger=mainLogger
+                       androidMiraiLogger=mainLogger
                     }
                 }catch (e: Throwable){
                     e.printStackTrace()
