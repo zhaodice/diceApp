@@ -20,6 +20,10 @@ class LoginViewModel(private val loginRepository: LoginRepository,private val co
 
     fun login(username: String, password: String,setProtocol: BotConfiguration.MiraiProtocol) {
         // can be launched in a separate asynchronous job
+        if(password.length>16){
+            _loginForm.value = LoginFormState(passwordError = R.string.password_over_16)
+            return
+        }
         val app=context.applicationContext as AppContext
         if(app.consoleService ==null) {
             _loginForm.value = LoginFormState(passwordError = R.string.has_not_already)

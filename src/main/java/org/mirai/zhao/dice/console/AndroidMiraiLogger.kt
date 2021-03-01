@@ -33,18 +33,18 @@ class AndroidMiraiLogger(override val identity: String?) : MiraiLoggerPlatformBa
                 val simpleDateFormat = SimpleDateFormat("HH:mm:ss", Locale.US)
                 val date = Date(time)
                 res = simpleDateFormat.format(date)
-                var levelStr="UNKNOWN"
+                var levelStr="[UNKNOWN]"
                 when(level){
                     LEVEL_DEBUG ->
-                        levelStr="DEBUG"
+                        levelStr="<font color=\"#006699\">[DEBUG]</font>"
                     LEVEL_INFO ->
-                        levelStr="INFO"
+                        levelStr="<font color=\"#009900\">[INFO]</font>"
                     LEVEL_ERROR ->
-                        levelStr="ERROR"
+                        levelStr="<font color=\"#990000\">[ERROR]</font>"
                     LEVEL_WARNING ->
-                        levelStr="WARNING"
+                        levelStr="<font color=\"#999933\">[WARNING]</font>"
                 }
-                return String.format("[%s][%s] %s ",res,levelStr,text)
+                return String.format("<font color=\"#333366\">[%s]</font> %s %s ",res,levelStr,text)
             }
         }
         private val list=ArrayList<Log>()
@@ -63,7 +63,7 @@ class AndroidMiraiLogger(override val identity: String?) : MiraiLoggerPlatformBa
             synchronized(this) {
                 val sb = StringBuilder()
                 for (log in list) {
-                    sb.append(log.toString()).append("\n");
+                    sb.append(log.toString()).append("<br/>")
                 }
                 return sb.toString()
             }

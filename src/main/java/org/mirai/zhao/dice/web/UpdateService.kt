@@ -17,7 +17,7 @@ object UpdateService {
     @JvmStatic
     fun autoUpdate(pathFile:File){
         val targetFile=pathFile
-        var newUrl:String?="https://github.com/zhaodice/diceAppInfoPush/blob/master/diceAppUpdate.txt"
+        var newUrl:String?="https://gitee.com/zhaodice/appupdate/blob/master/diceAppUpdate.txt"
         var update_str:String?
         do{
             update_str= WebUtil.getWebinfo(newUrl)

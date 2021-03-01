@@ -384,10 +384,11 @@ class MainActivity : AppCompatActivity() {
             }.start()
         }
         if(!loadedExtensionalOption) {
-            val s = read(File(AppContext.zhaoDiceData + "/extensionalOption.txt")).split("\n").toTypedArray()
+            val s = read(File(AppContext.zhaoDiceData + "/extensionalOption.txt")).split("\n")
             for (value in s) {
-                val s2: Array<String> = value.split(" ").toTypedArray()
-                if (s2.size == 2) spinner_values_text.add(Sentences_them(s2[0], s2[1]))
+                val s2: List<String> = value.split(" ")
+                if (s2.size == 2)
+                    spinner_values_text.add(Sentences_them(s2[0], s2[1]))
             }
             loadedExtensionalOption=true
         }
@@ -418,10 +419,10 @@ class MainActivity : AppCompatActivity() {
                         selfuin = qqArray[0]
                         shareData.edit().putString("selfuin", selfuin).apply()
                     }
+                    button_changeQQ.isEnabled = true
                 } else {
                     //才一个骰娘号，不让选择
                     selfuin = qqs[0]
-                    button_changeQQ.isEnabled = false
                 }
                 status_readDataOK = true
             } else {

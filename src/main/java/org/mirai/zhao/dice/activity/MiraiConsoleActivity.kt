@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Html
 import android.view.View
 import android.widget.Button
 import android.widget.ScrollView
@@ -64,14 +65,14 @@ class MiraiConsoleActivity : Activity() {
                         if (autoRoll) {
                             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
                         }
-                        tv.append(text)
-                        tv.append("\n")
+                        tv.append(Html.fromHtml(text,Html.FROM_HTML_MODE_LEGACY))
+                        tv.append(Html.fromHtml("<br/>"))
                     }
                 }
             }
             val scrollView = findViewById<ScrollView>(R.id.scrollView)
             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
-            if (ConsoleService.androidMiraiLogger != null) tv.text = ConsoleService.androidMiraiLogger!!.logStorage.build()
+            if (ConsoleService.androidMiraiLogger != null) tv.text = Html.fromHtml(ConsoleService.androidMiraiLogger!!.logStorage.build(),Html.FROM_HTML_MODE_LEGACY)
         }
         val scrollView = findViewById<ScrollView>(R.id.scrollView)
         scrollView.fullScroll(ScrollView.FOCUS_DOWN)

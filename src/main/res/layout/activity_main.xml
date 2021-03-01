@@ -110,6 +110,7 @@
                 android:tag="enable"
                 android:text="@string/autoLogin" />
             <Button
+                android:enabled="false"
                 android:id="@+id/changeQQ"
                 android:layout_weight="1"
                 android:layout_width="wrap_content"

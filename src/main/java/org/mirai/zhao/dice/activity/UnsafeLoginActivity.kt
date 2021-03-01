@@ -159,9 +159,9 @@ class UnsafeLoginActivity : AppCompatActivity() {
     fun urlParams(strUrlParam: String): Map<String, String> {
         val mapRequest: MutableMap<String, String> = HashMap()
         //每个键值为一组
-        val arrSplit: Array<String> = strUrlParam.split("[&]").toTypedArray()
+        val arrSplit: Array<String> = strUrlParam.split("[&]")
         for (strSplit in arrSplit) {
-            val arrSplitEqual: Array<String> = strSplit.split("[=]").toTypedArray()
+            val arrSplitEqual: Array<String> = strSplit.split("[=]")
             //解析出键值
             if (arrSplitEqual.size > 1) { //正确解析
                 mapRequest[arrSplitEqual[0]] = arrSplitEqual[1]

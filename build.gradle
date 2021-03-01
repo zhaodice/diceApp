@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-def CORE_VERSION = "2.4.0"
+def CORE_VERSION = "2.4.1"
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
@@ -16,8 +16,8 @@ android {
         applicationId "org.mirai.zhao.dice"
         minSdkVersion 26
         targetSdkVersion 29//改成30将无法访问/sdcard根目录！
-        versionCode 2
-        versionName "2.6"
+        versionCode 4
+        versionName "2.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

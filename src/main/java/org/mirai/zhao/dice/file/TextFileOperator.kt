@@ -22,7 +22,7 @@ object TextFileOperator {
             br.close()
             isr.close()
             fis.close()
-            return sb.toString().replaceFirst("\\ufeff".toRegex(), "").trim()
+            return sb.toString().replaceFirst("\\ufeff", "").trim()
         }
     }
     @JvmStatic
@@ -32,6 +32,7 @@ object TextFileOperator {
             val outputStreamWriter=OutputStreamWriter(writerStream, "UTF-8")
             val writer = BufferedWriter(outputStreamWriter)
             writer.write(s)
+            writer.flush()
             writer.close()
             outputStreamWriter.close()
             writerStream.close()

@@ -82,6 +82,8 @@ public class WebUtil {
             URL url=new URL(str_url);
             //2.开水闸---openCOnnection
             HttpURLConnection httpURLConnection= (HttpURLConnection) url.openConnection();
+            httpURLConnection.setConnectTimeout(2000);
+            httpURLConnection.setReadTimeout(3000);
             httpURLConnection.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0");
             //3.建管道---InputStream
             InputStream inputStream=httpURLConnection.getInputStream();
