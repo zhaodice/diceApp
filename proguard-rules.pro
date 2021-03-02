@@ -24,7 +24,30 @@
 -keepclasseswithmembers class * extends java.lang.Exception { *;}
 
 #kotlin
--keep class kotlin.** { *; }
+-keep class kotlin.collections.* { *; }
+-keep class kotlin.text.* { *; }
+-keep class kotlin.sequences.* { *; }
+-keep class kotlin.jvm.** { *; }
+-keep class kotlin.coroutines.** { *; }
+-keep class kotlin.ranges.* { *; }
+-keep class kotlin.io.* { *; }
+-keep class kotlin.reflect.* { *; }
+-keep class kotlin.time.* { *; }
+-keep class kotlin.comparisons.* { *; }
+-keep class kotlin.random.* { *; }
+-keep class kotlin.internal.* { *; }
+-keep class kotlin.math.* { *; }
+-keep class kotlin.concurrent.* { *; }
+-keep class kotlin.properties.* { *; }
+-keep class kotlin.contracts.* { *; }
+-keep class kotlin.contracts.* { *; }
+-keep class kotlin.annotation.* { *; }
+-keep class kotlin.experimental.* { *; }
+-keep class kotlin.system.* { *; }
+-keep class kotlin.js.* { *; }
+-keep class kotlin.* { *; }
+
+
 -keep class kotlin.Metadata { *; }
 -dontwarn kotlin.**
 -keepclassmembers class **$WhenMappings {
@@ -55,12 +78,16 @@
 -keep class net.mamoe.mirai.qqandroid.QQAndroid.$Companion { *; }
 -keepclasseswithmembers class * extends net.mamoe.mirai.BotFactory{ *;}
 
--keep class net.mamoe.mirai.contact.** { *; }
+-keep class net.mamoe.yamlkt.* {*;}
+-keep class net.mamoe.mirai.console.** {*;}
+
+-keep class net.mamoe.mirai.contact.* { *; }
 -keep class net.mamoe.mirai.event.** { *; }
 -keep class net.mamoe.mirai.message.** { *; }
--keep class net.mamoe.mirai.network.** { *; }
--keep class net.mamoe.mirai.utils.** { *; }
+-keep class net.mamoe.mirai.network.* { *; }
+-keep class net.mamoe.mirai.utils.* { *; }
 -keep class net.mamoe.mirai.* { *; }
+-keep interface net.mamoe.mirai.* { *; }
 
 # ktor
 -keep class io.ktor.client.** { *; }
@@ -76,28 +103,39 @@
 
 # yaml
 
--keep class org.yaml.snakeyaml.* {*;}
+#-keep class org.yaml.snakeyaml.* {*;}
+-keep class org.yaml.snakeyaml.Yaml {*;}
 -keep class org.yaml.snakeyaml.util.* {*;}
 
 # okhttp
 -keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
 -dontwarn okhttp3.internal.platform.ConscryptPlatform
 
--keep class net.mamoe.yamlkt.* {*;}
 
 -keep class javax.script.** {*;}
 -keep class java.lang.management.** {*;}
 -keep class fightcent.permissionrequest.** { *; }
--keep class net.mamoe.mirai.console.** {*;}
 -keep class dalvik.system.** {*;}
 -keep class terminal.** {*;}
--keep class kotlinx.** {*;}
--keep class org.bouncycastle.** {*;}
+#-keep class kotlinx.** {*;}
+#-keep class org.bouncycastle.asn1.** {*;}
+-keep class org.bouncycastle.jce.provider.**{ *;}
+-keep class org.bouncycastle.jcajce.provider.** {*;}
+#-keep class okhttp3.** {*;}
+#-keep interface okhttp3.**{*;}
+#-dontwarn okhttp3.**
 
--keep class okhttp3.** {*;}
--keep interface okhttp3.**{*;}
--dontwarn okhttp3.**
+# Okhttp3的混淆配置
+# JSR 305 annotations are for embedding nullability information.
+-dontwarn javax.annotation.**
+# A resource is loaded with a relative path so the package of this class must be preserved.
+-keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
+# Animal Sniffer compileOnly dependency to ensure APIs are compatible with older versions of Java.
+-dontwarn org.codehaus.mojo.animal_sniffer.*
+# OkHttp platform used only on JVM and when Conscrypt dependency is available.
+-dontwarn okhttp3.internal.platform.ConscryptPlatform
 
--keep class okio.* { *; }
--keep interface okio.* { *; }
--dontwarn okio.**
+
+#-keep class okio.* { *; }
+#-keep interface okio.* { *; }
+#-dontwarn okio.**

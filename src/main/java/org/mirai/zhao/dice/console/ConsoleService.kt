@@ -111,7 +111,7 @@ class ConsoleService : Service() {
             }
         }
         @JvmStatic
-        fun autoLogin(qq: String, password: String, setProtocol:BotConfiguration.MiraiProtocol, loginResult: CompletableDeferred<String>):Bot {
+        fun autoLogin(qq: String, password: String, setProtocol: BotConfiguration.MiraiProtocol, loginResult: CompletableDeferred<String>):Bot {
             val zhaoDiceDeviceInfo= File(AppContext.zhaoDiceDeviceInfo)
             if(!zhaoDiceDeviceInfo.exists())
                 zhaoDiceDeviceInfo.mkdirs()
@@ -199,7 +199,7 @@ class ConsoleService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         //Log.d(TAG, "onStartCommand()");
         // 在API11之后构建Notification的方式
-        val builder = Notification.Builder(this.applicationContext,zhaoNotifyId) //获取一个Notification构造器
+        val builder = Notification.Builder(this.applicationContext, zhaoNotifyId) //获取一个Notification构造器
         val nfIntent = Intent(this, MiraiConsoleActivity::class.java)
         builder.setContentIntent(PendingIntent.getActivity(this, 0, nfIntent, 0)) // 设置PendingIntent
                 .setLargeIcon(BitmapFactory.decodeResource(this.resources,
