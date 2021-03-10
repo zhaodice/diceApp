@@ -304,7 +304,8 @@ class MainActivity : AppCompatActivity() {
         //检测是否有读写权限
         try{
             val file=File(AppContext.miraiDir,"check")
-            if(file.createNewFile()){
+            file.parentFile?.mkdirs()
+            if(file.exists()||file.createNewFile()){
                 activityFresh()
                 file.delete()
             }else{
@@ -365,19 +366,14 @@ class MainActivity : AppCompatActivity() {
             val sdPath=getExternalStorageDirectory().path
             val oldStorage=File("$sdPath/miraiDice/plugins/ZhaoDice")
             val oldStorageRename=File("$sdPath/miraiDice/plugins/ZhaoDice_")
-            if(oldStorage.exists()){
-                FileService.copy(oldStorage.absolutePath,AppContext.zhaoDice)
+            val newStorage=File(AppContext.zhaoDice)
+            newStorage.mkdirs()
+            if(oldStorage.exists()&&newStorage.exists()){
+                FileService.copy(oldStorage.absolutePath,newStorage.absolutePath)
                 oldStorage.renameTo(oldStorageRename)
             }
             object : Thread() {
                 override fun run() {
-                    object :Thread(){
-                        override fun run() {
-                            sleep(5000)
-                            startControlService(this@MainActivity)
-                            super.run()
-                        }
-                    }.start()
                     startControlService(this@MainActivity)
                     super.run()
                 }

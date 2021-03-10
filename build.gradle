@@ -1,9 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-def CORE_VERSION = "2.4.1"
+def CORE_VERSION = "2.5-M2"
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
+
     compileOptions {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
@@ -13,21 +14,22 @@ android {
         freeCompilerArgs = ['-Xjvm-default=all','-Xopt-in=kotlin.RequiresOptIn']
     }
     defaultConfig {
+        multiDexEnabled true
         applicationId "org.mirai.zhao.dice"
-        minSdkVersion 26
+        //minSdkVersion 26
+        minSdkVersion 22//24
         targetSdkVersion 29//改成30将无法访问/sdcard根目录！
         versionCode 4
-        versionName "2.7"
-
+        versionName "2.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    dexOptions{
+        javaMaxHeapSize "4g"
+        jumboMode = true
     }
     buildTypes {
         release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -38,7 +40,6 @@ android {
         exclude 'META-INF/kotlinx-io.kotlin_module'
         exclude 'META-INF/kotlinx-coroutines-io.kotlin_module'
     }
-
 }
 configurations {
     cleanedAnnotations
@@ -51,20 +52,16 @@ kotlin.sourceSets.all {
     languageSettings.useExperimentalAnnotation("net.mamoe.mirai.console.util.ConsoleExperimentalApi")
 }
 dependencies {
-
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-
-    //compileOnly files('libs/mirai-core-jvm-1.3.0.jar')
-    //implementation files('libs/mirai-core-qqandroid-1.3.0.jar')
-    //implementation "net.mamoe:mirai-core-qqandroid:$CORE_VERSION"
     implementation "net.mamoe:mirai-core:$CORE_VERSION"
+    implementation "net.mamoe:mirai-core-api:$CORE_VERSION"
+    implementation "net.mamoe:mirai-core-utils:$CORE_VERSION"
+    //implementation 'org.bouncycastle:bcprov-jdk15on:1.64'
 
     implementation 'io.apisense:rhino-android:1.0'
     implementation 'androidx.annotation:annotation:1.1.0'
-    //implementation "net.mamoe:mirai-console:$CORE_VERSION"
-    //implementation 'net.mamoe:mirai-console-terminal:1.0.0'
     implementation "org.jline:jline:3.15.0"
     implementation "org.fusesource.jansi:jansi:1.18"
     implementation("net.mamoe.yamlkt:yamlkt:0.7.5")

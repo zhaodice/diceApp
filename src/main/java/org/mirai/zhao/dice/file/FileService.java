@@ -49,16 +49,25 @@ public class FileService {
                     new BufferedOutputStream(new FileOutputStream(copyPath)));
             byte [] buf = new byte[1024*512];
             int length;
-            int off=0;
             while((length=read.read(buf)) != -1){
-                write.write(buf,off,length);
-                off+=length;
+                write.write(buf,0,length);
             }
             read.close();
             write.close();
         }else{
             System.out.println("请输入正确的文件名或路径名");
         }
+    }
+    public static String fillZero(String s,int len){
+        StringBuilder filled=new StringBuilder();
+        int needRepeat=len-s.length();
+        if(needRepeat<=0)
+            return s;
+        while(needRepeat-->0){
+            filled.append("0");
+        }
+        filled.append(s);
+        return filled.toString();
     }
     /*获取文件MD5*/
     public static String getFileMD5(InputStream is) {
@@ -78,7 +87,7 @@ public class FileService {
         }
         if(bi==null)
             return null;
-        return bi.toString(16);
+        return fillZero(bi.toString(16),32);
     }
     /*获取文件MD5*/
     public static String getFileMD5(File path) {

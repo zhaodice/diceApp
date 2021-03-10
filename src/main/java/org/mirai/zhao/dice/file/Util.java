@@ -16,7 +16,7 @@ public class Util {
         File mWorkingPath = new File(dir);
         if (!mWorkingPath.exists()) {
             if (!mWorkingPath.mkdirs()) {
-                // AwLog.Log( "cannot create directory.");
+                System.out.println("cannot create plugins dir");
             }
         }
         try {

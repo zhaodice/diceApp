@@ -87,6 +87,7 @@ class AndroidMiraiLogger(override val identity: String?) : MiraiLoggerPlatformBa
 
     override fun error0(message: String?, e: Throwable?) {
         if (message != null) {
+            e?.printStackTrace()
             logStorage.append(LEVEL_ERROR,message)
         }
     }

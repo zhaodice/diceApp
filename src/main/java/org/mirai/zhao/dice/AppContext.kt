@@ -1,20 +1,23 @@
 package org.mirai.zhao.dice
 
 import android.app.Application
-import android.os.Environment
+import android.content.Context
 import android.os.Environment.getExternalStorageDirectory
-import org.mirai.zhao.dice.console.ConsoleService.Companion.startControlService
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.mirai.zhao.dice.crash.CrashHandler
 import org.mirai.zhao.dice.console.ConsoleService
-import org.mirai.zhao.dice.file.FileService
-import org.mirai.zhao.dice.file.Util
-import org.mirai.zhao.dice.web.UpdateService
 import java.io.File
+import java.security.Security
 
 class AppContext : Application() {
     var dataStorage: String? = null
     val privateStorage: String? = null
     override fun onCreate() {
+        // Remove the OS provided bouncy castle provider
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
+        // Add the bouncy castle provider from the added library
+        Security.addProvider(BouncyCastleProvider())
+
         System.setProperty("mirai.slider.captcha.supported","1")
         val crashHandler = CrashHandler.getInstance()
         crashHandler.init()
@@ -22,7 +25,7 @@ class AppContext : Application() {
         dataStorage = getExternalStorageDirectory().path
         //privateStorage = getExternalStorageDirectory().path
         miraiDir = "$dataStorage/MiraiDice"
-        pluginsDir = "$miraiDir/plugins"
+        pluginsDir = getDir("plugins",0).absolutePath;//"$miraiDir/plugins"
         zhaoDice = "$miraiDir/data/ZhaoDice"
         zhaoDiceData = "$zhaoDice/cocdata/data"
         zhaoDiceDeviceInfo = "$zhaoDiceData/deviceInfo"
@@ -65,6 +68,7 @@ class AppContext : Application() {
         var context: AppContext? = null
         var consoleService: ConsoleService? = null
         var miraiDir: String = ""
+        @JvmField
         var pluginsDir: String = ""
         var zhaoDice: String = ""
         @JvmField

@@ -11,6 +11,7 @@ package terminal
 
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.nio.file.Paths
 
 private const val LN = 10.toByte()
 

@@ -9,6 +9,8 @@
 
 package terminal
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.mamoe.mirai.console.util.ConsoleInput
@@ -23,7 +25,6 @@ import kotlin.coroutines.resumeWithException
 
 
 internal object ConsoleInputImpl : ConsoleInput {
-    private val format = DateTimeFormatter.ofPattern("HH:mm:ss")
     internal val thread = Executors.newSingleThreadExecutor { task ->
         Thread(task, "Mirai Console Input Thread").also {
             it.isDaemon = false
@@ -47,10 +48,10 @@ internal object ConsoleInputImpl : ConsoleInput {
                                 lineReader.printAbove(
                                     Ansi.ansi()
                                         .fgCyan()
-                                        .a(
+                                        /*.a(
                                             LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault())
                                                 .format(format)
-                                        )
+                                        )*/
                                         .a(" ")
                                         .fgMagenta().a(hint)
                                         .reset()

@@ -1,6 +1,7 @@
 package org.mirai.zhao.dice.activity
 
 import android.app.Activity
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -46,12 +47,14 @@ class MiraiConsoleActivity : Activity() {
                 btn.text = "点击允许滚动"
             }
         }
-        scrollView.setOnScrollChangeListener{ _: View, _: Int, _: Int, _: Int, _: Int ->
-            val contentView: View = scrollView.getChildAt(0)
-            if(contentView.measuredHeight == scrollView.scrollY + scrollView.height){
-                btn.visibility=View.VISIBLE
-            }else{
-                btn.visibility=View.INVISIBLE
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) {
+            scrollView.setOnScrollChangeListener { _: View, _: Int, _: Int, _: Int, _: Int ->
+                val contentView: View = scrollView.getChildAt(0)
+                if (contentView.measuredHeight == scrollView.scrollY + scrollView.height) {
+                    btn.visibility = View.VISIBLE
+                } else {
+                    btn.visibility = View.INVISIBLE
+                }
             }
         }
         val console = (this.applicationContext as AppContext).consoleService
@@ -65,14 +68,21 @@ class MiraiConsoleActivity : Activity() {
                         if (autoRoll) {
                             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
                         }
-                        tv.append(Html.fromHtml(text,Html.FROM_HTML_MODE_LEGACY))
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                            tv.append(Html.fromHtml(text,Html.FROM_HTML_MODE_LEGACY))
+                        else
+                            tv.append(Html.fromHtml(text))
                         tv.append(Html.fromHtml("<br/>"))
                     }
                 }
             }
             val scrollView = findViewById<ScrollView>(R.id.scrollView)
             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
-            if (ConsoleService.androidMiraiLogger != null) tv.text = Html.fromHtml(ConsoleService.androidMiraiLogger!!.logStorage.build(),Html.FROM_HTML_MODE_LEGACY)
+            if (ConsoleService.androidMiraiLogger != null)
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                    tv.text = Html.fromHtml(ConsoleService.androidMiraiLogger!!.logStorage.build(),Html.FROM_HTML_MODE_LEGACY)
+                else
+                    tv.text = Html.fromHtml(ConsoleService.androidMiraiLogger!!.logStorage.build())
         }
         val scrollView = findViewById<ScrollView>(R.id.scrollView)
         scrollView.fullScroll(ScrollView.FOCUS_DOWN)

@@ -15,6 +15,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
+import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiInternalApi
 import org.mirai.zhao.dice.AppContext
@@ -99,14 +100,12 @@ class ConsoleService : Service() {
         }
         @JvmStatic
         fun startControlService(context: Context){
-            synchronized(ConsoleService::javaClass){
-                if(AppContext.consoleService==null) {
-                    val intent = Intent(context, ConsoleService::class.java)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        context.startForegroundService(intent)
-                    } else {
-                        context.startService(intent)
-                    }
+            if(AppContext.consoleService==null) {
+                val intent = Intent(context, ConsoleService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
                 }
             }
         }
@@ -166,7 +165,7 @@ class ConsoleService : Service() {
                     ConsoleTerminalSettings.noConsole=true
                     ConsoleTerminalSettings.noAnsi=true
                     MiraiConsoleTerminalLoader.startAsDaemon().apply {
-                       androidMiraiLogger=mainLogger
+                        androidMiraiLogger=mainLogger
                     }
                 }catch (e: Throwable){
                     e.printStackTrace()
@@ -199,7 +198,10 @@ class ConsoleService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         //Log.d(TAG, "onStartCommand()");
         // 在API11之后构建Notification的方式
-        val builder = Notification.Builder(this.applicationContext, zhaoNotifyId) //获取一个Notification构造器
+        val builder = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            Notification.Builder(this.applicationContext, zhaoNotifyId)
+        else
+            Notification.Builder(this.applicationContext)//获取一个Notification构造器
         val nfIntent = Intent(this, MiraiConsoleActivity::class.java)
         builder.setContentIntent(PendingIntent.getActivity(this, 0, nfIntent, 0)) // 设置PendingIntent
                 .setLargeIcon(BitmapFactory.decodeResource(this.resources,

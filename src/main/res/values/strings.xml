@@ -46,7 +46,7 @@
         可能正在检查更新，请多等30秒至2分钟再点登录试试
     </string>
     <string name="password_over_16">密码长度不得超过16位</string>
-    <string name="deleteAccounts">删除已登陆的骰娘账号</string>
+    <string name="deleteAccounts">骰娘账号管理</string>
     <string name="reboot">重启APP</string>
     <string name="mutiAccount">发现重复账号！右下角删除已登陆账号后再试</string>
     <string name="currentUin">当前操作账号：</string>

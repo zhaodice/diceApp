@@ -8,20 +8,22 @@
  */
 
 @file:Suppress(
-    "INVISIBLE_MEMBER",
-    "INVISIBLE_REFERENCE",
-    "CANNOT_OVERRIDE_INVISIBLE_MEMBER",
-    "INVISIBLE_SETTER",
-    "INVISIBLE_GETTER",
-    "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
-    "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING",
-    "EXPOSED_SUPER_CLASS"
+        "INVISIBLE_MEMBER",
+        "INVISIBLE_REFERENCE",
+        "CANNOT_OVERRIDE_INVISIBLE_MEMBER",
+        "INVISIBLE_SETTER",
+        "INVISIBLE_GETTER",
+        "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
+        "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING",
+        "EXPOSED_SUPER_CLASS"
 )
 @file:OptIn(ConsoleInternalApi::class, ConsoleFrontEndImplementation::class, ConsoleTerminalExperimentalApi::class)
 
 package terminal
 
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
@@ -34,8 +36,6 @@ import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
-import terminal.noconsole.AllEmptyLineReader
-import terminal.noconsole.NoConsole
 import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.utils.*
 import org.fusesource.jansi.Ansi
@@ -48,8 +48,11 @@ import org.jline.terminal.impl.AbstractWindowsTerminal
 import org.mirai.zhao.dice.AppContext
 import org.mirai.zhao.dice.console.AndroidLoginSolver
 import org.mirai.zhao.dice.console.AndroidMiraiLogger
+import terminal.noconsole.AllEmptyLineReader
+import terminal.noconsole.NoConsole
 import java.nio.file.Path
 import java.nio.file.Paths
+
 
 /**
  * mirai-console-terminal 后端实现
@@ -58,6 +61,8 @@ import java.nio.file.Paths
  */
 @ConsoleExperimentalApi
 class MiraiConsoleImplementationTerminal
+@RequiresApi(Build.VERSION_CODES.O)
+@Suppress("MISSING_DEPENDENCY_CLASS")
 @JvmOverloads constructor(
         override val rootPath: Path = Paths.get(AppContext.miraiDir).toAbsolutePath(),
         override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader }),
@@ -68,14 +73,14 @@ class MiraiConsoleImplementationTerminal
         override val configStorageForJvmPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
         override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
-    NamedSupervisorJob("MiraiConsoleImplementationTerminal") +
-            CoroutineExceptionHandler { coroutineContext, throwable ->
-                if (throwable is CancellationException) {
-                    return@CoroutineExceptionHandler
-                }
-                val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
-                MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
-            }) {
+        NamedSupervisorJob("MiraiConsoleImplementationTerminal") +
+                CoroutineExceptionHandler { coroutineContext, throwable ->
+                    if (throwable is CancellationException) {
+                        return@CoroutineExceptionHandler
+                    }
+                    val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
+                    MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
+                }) {
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
@@ -93,7 +98,7 @@ class MiraiConsoleImplementationTerminal
         }
     }
 }
-val loggerList = HashMap<String,AndroidMiraiLogger>()
+val loggerList = HashMap<String, AndroidMiraiLogger>()
 val lineReader: LineReader by lazy {
     val terminal = terminal
     if (terminal is NoConsole) return@lazy AllEmptyLineReader

@@ -139,3 +139,11 @@
 #-keep class okio.* { *; }
 #-keep interface okio.* { *; }
 #-dontwarn okio.**
+
+-keep class sun.misc.Service {*;}
+-keep class sun.misc.ServiceConfigurationError {*;}
+-keep class sun.misc.VM {*;}
+-keep class sun.reflect.Reflection {*;}
+-keep class sun.security.action.GetPropertyAction {*;}
+-keep class sun.security.util.SecurityConstants {*;}
+-keep interface sun.security.util.PermissionFactory {*;}
