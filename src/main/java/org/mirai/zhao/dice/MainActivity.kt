@@ -1,13 +1,17 @@
 package org.mirai.zhao.dice
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.*
 import android.app.ActivityManager.RunningAppProcessInfo
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.net.Uri
 import android.os.*
 import android.os.Environment.getExternalStorageDirectory
+import android.provider.Settings
 import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +30,7 @@ import org.mirai.zhao.dice.file.TextFileOperator.read
 import java.io.File
 import java.util.*
 
+
 class MainActivity : AppCompatActivity() {
     var alterDialog: AlertDialog? = null
     private var selfuin: String? = null
@@ -37,7 +42,7 @@ class MainActivity : AppCompatActivity() {
     private var editText_editValue: EditText? = null
     private lateinit var status: TextView
     private var adapter: SentencesAdapter? = null
-    private var current_sentences_them: Sentences_them? = null
+    private var current_sentencesThem: SentencesThem? = null
     private val checkUpdate: Button? = null
     private lateinit var notice: TextView
     private var settings_layout: ScrollView? = null
@@ -56,55 +61,66 @@ class MainActivity : AppCompatActivity() {
             = false
 
     companion object {
-        private val spinner_values_text = ArrayList<Sentences_them>()
+        private val spinner_values_text = ArrayList<SentencesThem>()
 
         init {
             if (spinner_values_text.size == 0) {
-                spinner_values_text.add(Sentences_them("MASTER_INFO", "（master）骰主信息(文本)"))
-                spinner_values_text.add(Sentences_them("MASTER_QQ", "（×）骰主QQ(一行一个)"))
-                spinner_values_text.add(Sentences_them("DICE_NAME", "（×）骰娘姓名"))
-                spinner_values_text.add(Sentences_them("WHITE_LIST", "（×）群白名单一行一个——清空全局有效"))
-                spinner_values_text.add(Sentences_them("PREFIX", "（×）指令前缀"))
-                //spinner_values_text.add(new Sentences_them("PATH_DRAW", "（×）自定义牌堆路径，默认值 draw,重启生效"));
-                //spinner_values_text.add(new Sentences_them("PATH_PICTURES", "（×）自定义图片路径，默认值 pictures,重启生效"));
-                //spinner_values_text.add(new Sentences_them("PATH_VOICE", "（×）自定义语音路径，默认值 sound_robot,重启生效"));
-                //spinner_values_text.add(Sentences_them("REPLY", "（×）模糊词回复\n一行一个 关键词/内容 例:\n赵怡然/天才!"))
-                spinner_values_text.add(Sentences_them("REPLY_EQU", "（×）匹配词回复\n一行一个 关键词/内容 例:\n赵怡然/天才!"))
-                spinner_values_text.add(Sentences_them("DICE_DISMISS_AGREE", "（dismiss）dismiss退群成功"))
-                spinner_values_text.add(Sentences_them("DICE_DISMISS_DENIED", "（dismiss）dismiss退群失败-没有权限"))
-                spinner_values_text.add(Sentences_them("SENTENCE_LOG_OPEN", "（log on）聊天记录程序被打开"))
-                spinner_values_text.add(Sentences_them("SENTENCE_LOG_CLOSE", "（log off）聊天记录程序被关闭"))
-                spinner_values_text.add(Sentences_them("SENTENCE_LOG_DENIED", "（log）非masterQQ请求log被拒绝"))
-                spinner_values_text.add(Sentences_them("SENTENCE_SETCOC_DENIED", "（setcoc）无权设置房规"))
-                spinner_values_text.add(Sentences_them("SENTENCE_DRAW_FAILURE", "（draw/deck）牌堆抽取失败——牌堆找不到或出错"))
-                spinner_values_text.add(Sentences_them("SENTENCE_DRAW_SUCCESS", "（draw/deck）牌堆抽取成功"))
-                spinner_values_text.add(Sentences_them("SENTENCE_DICE_DENIED", "（bot/robot）无权开关骰子"))
-                spinner_values_text.add(Sentences_them("SENTENCE_DICE_OPEN", "（bot/robot on）骰子被打开"))
-                spinner_values_text.add(Sentences_them("SENTENCE_DICE_ROBOT_TEXT", "（bot/robot）BOT信息"))
-                spinner_values_text.add(Sentences_them("SENTENCE_DICE_HELP_TEXT", "（help）HELP信息"))
-                spinner_values_text.add(Sentences_them("SENTENCE_DICE_OPEN_ALREADY", "（bot/robot on/off）骰子已经打开或关闭,或bot指令非法"))
-                spinner_values_text.add(Sentences_them("SENTENCE_DICE_CLOSE", "（bot/robot off）骰子被关闭"))
-                spinner_values_text.add(Sentences_them("SENTENCE_BIG_FAILURE", "（ra/rb/rp/sc）骰出大失败"))
-                spinner_values_text.add(Sentences_them("SENTENCE_FAILURE", "（ra/rb/rp/sc）骰出失败"))
-                spinner_values_text.add(Sentences_them("SENTENCE_BIG_SUCCESS", "（ra/rb/rp/sc）骰出大成功"))
-                spinner_values_text.add(Sentences_them("SENTENCE_VERY_HARD_SUCCESS", "（ra/rb/rp/sc）骰出极难成功"))
-                spinner_values_text.add(Sentences_them("SENTENCE_HARD_SUCCESS", "（ra/rb/rp/sc）骰出困难成功"))
-                spinner_values_text.add(Sentences_them("SENTENCE_SUCCESS", "（ra/rb/rp/sc）骰出成功"))
-                spinner_values_text.add(Sentences_them("SENTENCE_ILLEGAL_TOO_MUCH", "（×）非法操作，超出资源限制"))
-                spinner_values_text.add(Sentences_them("SENTENCE_ILLEGAL", "（×）非法操作，指令不合规"))
-                spinner_values_text.add(Sentences_them("SENTENCE_ROLL", "（r）骰点"))
-                spinner_values_text.add(Sentences_them("SENTENCE_HIDDEN_ROLL", "（rh）暗骰在群里说点啥"))
-                spinner_values_text.add(Sentences_them("SENTENCE_CHANGE_NAME", "（nn）修改名字成功"))
-                spinner_values_text.add(Sentences_them("SENTENCE_CHANGE_CARD", "（nn）设置现存档位成功"))
-                spinner_values_text.add(Sentences_them("SENTENCE_GET_PAYER_INFO", "（stshow）获取玩家属性"))
-                spinner_values_text.add(Sentences_them("SENTENCE_SET_PAYER_INFO", "（st）设置玩家属性"))
-                spinner_values_text.add(Sentences_them("SENTENCE_JRRP", "（jrrp）今日人品"))
-                spinner_values_text.add(Sentences_them("SENTENCE_PROMOTION_SUCCESS", "（en）技能成长鉴定成功"))
-                spinner_values_text.add(Sentences_them("SENTENCE_PROMOTION_FAILURE", "（en）技能成长鉴定失败"))
+                spinner_values_text.add(SentencesThem("MASTER_INFO", "（master）骰主信息(文本)"))
+                spinner_values_text.add(SentencesThem("MASTER_QQ", "（×）骰主QQ(一行一个)"))
+                spinner_values_text.add(SentencesThem("DICE_NAME", "（×）骰娘姓名"))
+                spinner_values_text.add(SentencesThem("WHITE_LIST", "（×）群白名单一行一个——清空全局有效"))
+                spinner_values_text.add(SentencesThem("PREFIX", "（×）指令前缀"))
+                spinner_values_text.add(SentencesThem("REPLY_EQU", "（×）匹配词回复\n一行一个 关键词/内容 例:\n赵怡然/天才!"))
+                spinner_values_text.add(SentencesThem("DICE_DISMISS_AGREE", "（dismiss）dismiss退群成功"))
+                spinner_values_text.add(SentencesThem("DICE_DISMISS_DENIED", "（dismiss）dismiss退群失败-没有权限"))
+                spinner_values_text.add(SentencesThem("SENTENCE_LOG_OPEN", "（log on）聊天记录程序被打开"))
+                spinner_values_text.add(SentencesThem("SENTENCE_LOG_CLOSE", "（log off）聊天记录程序被关闭"))
+                spinner_values_text.add(SentencesThem("SENTENCE_LOG_DENIED", "（log）非masterQQ请求log被拒绝"))
+                spinner_values_text.add(SentencesThem("SENTENCE_SETCOC_DENIED", "（setcoc）无权设置房规"))
+                spinner_values_text.add(SentencesThem("SENTENCE_DRAW_FAILURE", "（draw/deck）牌堆抽取失败——牌堆找不到或出错"))
+                spinner_values_text.add(SentencesThem("SENTENCE_DRAW_SUCCESS", "（draw/deck）牌堆抽取成功"))
+                spinner_values_text.add(SentencesThem("SENTENCE_DICE_DENIED", "（bot/robot）无权开关骰子"))
+                spinner_values_text.add(SentencesThem("SENTENCE_DICE_OPEN", "（bot/robot on）骰子被打开"))
+                spinner_values_text.add(SentencesThem("SENTENCE_DICE_ROBOT_TEXT", "（bot/robot）BOT信息"))
+                spinner_values_text.add(SentencesThem("SENTENCE_DICE_HELP_TEXT", "（help）HELP信息"))
+                spinner_values_text.add(SentencesThem("SENTENCE_DICE_OPEN_ALREADY", "（bot/robot on/off）骰子已经打开或关闭,或bot指令非法"))
+                spinner_values_text.add(SentencesThem("SENTENCE_DICE_CLOSE", "（bot/robot off）骰子被关闭"))
+                spinner_values_text.add(SentencesThem("SENTENCE_BIG_FAILURE", "（ra/rb/rp/sc）骰出大失败"))
+                spinner_values_text.add(SentencesThem("SENTENCE_FAILURE", "（ra/rb/rp/sc）骰出失败"))
+                spinner_values_text.add(SentencesThem("SENTENCE_BIG_SUCCESS", "（ra/rb/rp/sc）骰出大成功"))
+                spinner_values_text.add(SentencesThem("SENTENCE_VERY_HARD_SUCCESS", "（ra/rb/rp/sc）骰出极难成功"))
+                spinner_values_text.add(SentencesThem("SENTENCE_HARD_SUCCESS", "（ra/rb/rp/sc）骰出困难成功"))
+                spinner_values_text.add(SentencesThem("SENTENCE_SUCCESS", "（ra/rb/rp/sc）骰出成功"))
+                spinner_values_text.add(SentencesThem("SENTENCE_ILLEGAL_TOO_MUCH", "（×）非法操作，超出资源限制"))
+                spinner_values_text.add(SentencesThem("SENTENCE_ILLEGAL", "（×）非法操作，指令不合规"))
+                spinner_values_text.add(SentencesThem("SENTENCE_ROLL", "（r）骰点"))
+                spinner_values_text.add(SentencesThem("SENTENCE_HIDDEN_ROLL", "（rh）暗骰在群里说点啥"))
+                spinner_values_text.add(SentencesThem("SENTENCE_CHANGE_NAME", "（nn）修改名字成功"))
+                spinner_values_text.add(SentencesThem("SENTENCE_CHANGE_CARD", "（nn）设置现存档位成功"))
+                spinner_values_text.add(SentencesThem("SENTENCE_GET_PAYER_INFO", "（stshow）获取玩家属性"))
+                spinner_values_text.add(SentencesThem("SENTENCE_SET_PAYER_INFO", "（st）设置玩家属性"))
+                spinner_values_text.add(SentencesThem("SENTENCE_JRRP", "（jrrp）今日人品"))
+                spinner_values_text.add(SentencesThem("SENTENCE_PROMOTION_SUCCESS", "（en）技能成长鉴定成功"))
+                spinner_values_text.add(SentencesThem("SENTENCE_PROMOTION_FAILURE", "（en）技能成长鉴定失败"))
             }
         }
     }
 
+    @SuppressLint("BatteryLife")
+    private fun ignoreBatteryOptimization(activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val powerManager = activity.getSystemService(Context.POWER_SERVICE) as PowerManager
+            //  判断当前APP是否有加入电池优化的白名单，如果没有，弹出加入电池优化的白名单的设置对话框。
+            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
+            if (!hasIgnored) {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = Uri.parse("package:" + activity.packageName)
+                startActivity(intent)
+            } else {
+                Toast.makeText(activity, "您已授权忽略电池优化", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
     private val switchCheckListener = View.OnClickListener { doInterfaceDataSaving() }
 
     internal class MainActivityHand(mainLooper: Looper?) : Handler(mainLooper!!) {
@@ -140,24 +156,24 @@ class MainActivity : AppCompatActivity() {
             private fun _setSubControlsEnable(viewGroup: ViewGroup, enable: Boolean) {
                 for (i in 0 until viewGroup.childCount) {
                     when(val v = viewGroup.getChildAt(i)){
-                        is ViewGroup->when(v){
-                            is Spinner->{
+                        is ViewGroup -> when (v) {
+                            is Spinner -> {
                                 v.isClickable = enable
                                 v.isEnabled = enable
                             }
-                            is ListView->{
+                            is ListView -> {
                                 v.setClickable(enable)
                                 v.setEnabled(enable)
                             }
-                            else ->{
+                            else -> {
                                 _setSubControlsEnable(v, enable)
                             }
                         }
-                        is EditText->{
+                        is EditText -> {
                             v.setEnabled(enable)
                             v.setClickable(enable)
                         }
-                        is Button->{
+                        is Button -> {
                             if ("enable" != v.getTag()) v.setEnabled(enable)
                         }
                     }
@@ -232,12 +248,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         shareData = getSharedPreferences("app", MODE_PRIVATE)
-        selfuin = shareData.getString("selfuin",null)
+        selfuin = shareData.getString("selfuin", null)
         val consoleButton:Button=findViewById(R.id.consoleEnter)
         consoleButton.setOnClickListener {
             val i = Intent(this@MainActivity, MiraiConsoleActivity::class.java)
             startActivity(i)
+        }
+        findViewById<Button>(R.id.keeplive).setOnClickListener{
+            ignoreBatteryOptimization(this)
         }
         textview_selfuin=findViewById(R.id.selfuin)
         switch_openDice = findViewById(R.id.switch_openDice)
@@ -292,7 +312,7 @@ class MainActivity : AppCompatActivity() {
         spinner_values.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
                 doInterfaceDataSaving()
-                current_sentences_them = adapter!!.getItem(position)
+                current_sentencesThem = adapter!!.getItem(position)
                 doInterfaceUpdate()
             }
 
@@ -303,7 +323,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkAndFresh(){
         //检测是否有读写权限
         try{
-            val file=File(AppContext.miraiDir,"check")
+            val file=File(AppContext.miraiDir, "check")
             file.parentFile?.mkdirs()
             if(file.exists()||file.createNewFile()){
                 activityFresh()
@@ -311,7 +331,7 @@ class MainActivity : AppCompatActivity() {
             }else{
                 doRequirePermission()
             }
-        }catch (e:Throwable){
+        }catch (e: Throwable){
             doRequirePermission()
         }
     }
@@ -363,13 +383,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun activityFresh() {
         if (AppContext.consoleService == null) {
-            val sdPath=getExternalStorageDirectory().path
+            val sdPath=AppContext.dataStorage
             val oldStorage=File("$sdPath/miraiDice/plugins/ZhaoDice")
             val oldStorageRename=File("$sdPath/miraiDice/plugins/ZhaoDice_")
             val newStorage=File(AppContext.zhaoDice)
-            newStorage.mkdirs()
+            if(!newStorage.exists())
+                newStorage.mkdirs()
             if(oldStorage.exists()&&newStorage.exists()){
-                FileService.copy(oldStorage.absolutePath,newStorage.absolutePath)
+                FileService.copy(oldStorage.absolutePath, newStorage.absolutePath)
                 oldStorage.renameTo(oldStorageRename)
             }
             object : Thread() {
@@ -384,7 +405,7 @@ class MainActivity : AppCompatActivity() {
             for (value in s) {
                 val s2: List<String> = value.split(" ")
                 if (s2.size == 2)
-                    spinner_values_text.add(Sentences_them(s2[0], s2[1]))
+                    spinner_values_text.add(SentencesThem(s2[0], s2[1]))
             }
             loadedExtensionalOption=true
         }
@@ -421,6 +442,17 @@ class MainActivity : AppCompatActivity() {
                     selfuin = qqs[0]
                 }
                 status_readDataOK = true
+                if(!shareData.getBoolean("readNotice", false)) {
+                    shareData.edit().putBoolean("readNotice", true).apply()
+                    val alterDialog = AlertDialog.Builder(this@MainActivity)
+                    alterDialog.setTitle("第一次使用必读")
+                    alterDialog.setMessage("APP默认情况下可能会被系统杀后台，无法长期挂机，如有需要长时间稳定运行，请自行搜索自己手机型号后台白名单相关设置(包括省电，清内存等等)，如百度：“华为后台设置教程”")
+                    alterDialog.setPositiveButton("确认") { dialogInterface, _ ->
+                        ignoreBatteryOptimization(this)
+                        dialogInterface.cancel()
+                    }
+                    alterDialog.create().show()
+                }
             } else {
                 showAlterDialog("你需要登陆骰娘账号作为骰娘才能正常使用，请点击【骰娘账号管理】")
             }
@@ -438,13 +470,14 @@ class MainActivity : AppCompatActivity() {
                         e.printStackTrace()
                     }
                 }
-                if (current_sentences_them != null && selfuin != null) {
+                if (current_sentencesThem != null && selfuin != null) {
+                    val id=selfuin as String
                     Handler(Looper.getMainLooper()).post {
-                        switch_publicMode.isChecked = storage.getGlobalBoolean(selfuin, "IS_PUBLIC_DICE")
-                        switch_openDice.isChecked = storage.getGlobalBoolean(selfuin, "OPEN_IN_GLOBAL")
-                        switch_keyAutoReply.isChecked = storage.getGlobalBoolean(selfuin, "KEY_AUTO_REPLY")
+                        switch_publicMode.isChecked = storage.getGlobalBoolean(id, "IS_PUBLIC_DICE")
+                        switch_openDice.isChecked = storage.getGlobalBoolean(id, "OPEN_IN_GLOBAL")
+                        switch_keyAutoReply.isChecked = storage.getGlobalBoolean(id, "KEY_AUTO_REPLY")
                     }
-                    val sentence = storage.getGlobalInfo(selfuin, current_sentences_them!!.tag)
+                    val sentence = storage.getGlobalInfo(id, current_sentencesThem!!.tag)
                     //editText_editValue.setText(sentence);
                     MainActivityHand.setEditText(editText_editValue, sentence)
                     dataLoaded = true
@@ -455,7 +488,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     if (!status_readDataOK) MainActivityHand.setTextView(status, "错误：QQ账号未正确登陆", Color.RED)
                 }
-                MainActivityHand.setTextView(textview_selfuin,selfuin, -0x993301)
+                MainActivityHand.setTextView(textview_selfuin, selfuin, -0x993301)
                 super.run()
             }
         }.start()
@@ -481,16 +514,18 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }else{
-            Toast.makeText(this,"没有更多账号可以切换",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "没有更多账号可以切换", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun doInterfaceDataSaving(): Boolean {
         if (dataLoaded) {
-            storage.saveGlobalBoolean(selfuin, "IS_PUBLIC_DICE", switch_publicMode.isChecked)
-            storage.saveGlobalBoolean(selfuin, "OPEN_IN_GLOBAL", switch_openDice.isChecked)
-            storage.saveGlobalBoolean(selfuin, "KEY_AUTO_REPLY", switch_keyAutoReply.isChecked)
-            if (current_sentences_them != null) storage.saveGlobalInfo(selfuin, current_sentences_them!!.tag, editText_editValue!!.text.toString())
+            val id=selfuin as String
+            storage.saveGlobalBoolean(id, "IS_PUBLIC_DICE", switch_publicMode.isChecked)
+            storage.saveGlobalBoolean(id, "OPEN_IN_GLOBAL", switch_openDice.isChecked)
+            storage.saveGlobalBoolean(id, "KEY_AUTO_REPLY", switch_keyAutoReply.isChecked)
+            if (current_sentencesThem != null)
+                storage.saveGlobalInfo(id, current_sentencesThem!!.tag, editText_editValue!!.text.toString())
             return true
         }
         return false

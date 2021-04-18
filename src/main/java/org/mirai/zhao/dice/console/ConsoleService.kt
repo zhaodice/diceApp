@@ -1,5 +1,6 @@
 package org.mirai.zhao.dice.console
 
+import AndroidMiraiConsole
 import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
@@ -7,43 +8,39 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
-import android.os.PowerManager
-import android.util.Log
+import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
-import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiInternalApi
 import org.mirai.zhao.dice.AppContext
 import org.mirai.zhao.dice.R
 import org.mirai.zhao.dice.activity.MiraiConsoleActivity
 import org.mirai.zhao.dice.file.FileService
-import org.mirai.zhao.dice.file.Util
+import org.mirai.zhao.dice.file.Assets
 import org.mirai.zhao.dice.web.UpdateService
-import terminal.ConsoleTerminalExperimentalApi
-import terminal.ConsoleTerminalSettings
-import terminal.MiraiConsoleTerminalLoader
-import terminal.mainLogger
 import java.io.File
+import java.io.OutputStream
+import java.io.PrintStream
+import java.nio.file.Paths
 
 
 class ConsoleService : Service() {
     private var start = false
     private val zhaoNotifyId="zhao_notification_id"
     private val zhaoNotifyName="zhao_notification_name"
+    lateinit var consoleFrontEnd: AndroidMiraiConsole
 
-    private lateinit var powerManager: PowerManager
-    private lateinit var wakeLock: PowerManager.WakeLock
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
     companion object {
         @JvmField
-        var androidMiraiLogger: AndroidMiraiLogger?=null
+        var androidMiraiLogger: AndroidMiraiLogger = AndroidMiraiLogger.INSTANCE
         @JvmField
         var onLogChangedListener: OnLogChangedListener?=null
         //const val START_SERVICE = 0
@@ -92,7 +89,7 @@ class ConsoleService : Service() {
             val jarMd5=shareData.getString("jar_md5", "")
             val assetsMd5=FileService.getFileMD5(context.assets.open(newjar.name))
             if(!newjar.exists()||!jarMd5.equals(assetsMd5, true)){
-                Util.CopyAssets(context, AppContext.pluginsDir, newjar.name)
+                Assets.copyAssets(context, AppContext.pluginsDir, newjar.name)
                 shareData.edit().putString("jar_md5", assetsMd5).apply()
                 println("Wrote dice plugin -> ${AppContext.pluginsDir}")
             }
@@ -119,6 +116,7 @@ class ConsoleService : Service() {
                 protocol= setProtocol
                 fileBasedDeviceInfo("${AppContext.zhaoDiceDeviceInfo}/$qq.json")
                 loginSolver=AndroidLoginSolver.INSTANCE
+                cacheDir = File(AppContext.zhaoDice+"/.MiraiCache_$protocol/$qq")
             }
             //System.out.println("使用设备文件："+"${AppContext.zhaoDiceDeviceInfo}/$qq.json")
             GlobalScope.launch(CoroutineExceptionHandler { _, loginFailedException ->
@@ -130,43 +128,48 @@ class ConsoleService : Service() {
                 //File("${AppContext.zhaoDiceDeviceInfo}/$qq.json").delete()
             }) {
                 bot.login()
+
                 loginResult.complete("")
             }
             return bot
         }
     }
 
-    @MiraiInternalApi
-    @ConsoleTerminalExperimentalApi
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("InvalidWakeLockTag")
     override fun onCreate() {
         AppContext.consoleService = this
-        powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BotWakeLock")
-        Thread{
-            Thread.sleep(1000)
-            try {
-                wakeLock.acquire()
-            } catch (e: Exception) {
-                Log.e("wakeLockError", e.message ?: "null")
-            }
-        }.start()
+
         startConsole()
         super.onCreate()
     }
-    @MiraiInternalApi
-    @ConsoleTerminalExperimentalApi
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun startConsole() {
         if (!start) {
             Thread{
                 try {
                     initPlugin(this)
                     UpdateService.autoUpdate(newPluginFile())
-                    ConsoleTerminalSettings.noConsole=true
-                    ConsoleTerminalSettings.noAnsi=true
-                    MiraiConsoleTerminalLoader.startAsDaemon().apply {
-                        androidMiraiLogger=mainLogger
-                    }
+                    consoleFrontEnd = AndroidMiraiConsole(baseContext, Paths.get(getDir("odex",0).apply { mkdirs() }.absolutePath))
+                    consoleFrontEnd.start()
+                    System.setOut(
+                            PrintStream(
+                                    BufferedOutputStream(
+                                            logger = AndroidMiraiLogger.INSTANCE.run { ({ line: String? -> info(line) }) }
+                                    ),
+                                    false,
+                                    "UTF-8"
+                            )
+                    )
+                    System.setErr(
+                            PrintStream(
+                                    BufferedOutputStream(
+                                            logger = AndroidMiraiLogger.INSTANCE.run { ({ line: String? -> warning(line) }) }
+                                    ),
+                                    false,
+                                    "UTF-8"
+                            )
+                    )
                 }catch (e: Throwable){
                     e.printStackTrace()
                 }

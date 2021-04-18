@@ -2,23 +2,30 @@ package org.mirai.zhao.dice.activity.ui.login
 
 import android.app.Activity
 import android.content.Intent
-import androidx.lifecycle.Observer
+import android.os.Build
 import android.os.Bundle
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
+import android.text.Html
+import android.text.Spanned
 import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import net.mamoe.mirai.message.data.Dice
 import net.mamoe.mirai.utils.BotConfiguration
 import org.mirai.zhao.dice.R
 import org.mirai.zhao.dice.activity.AccountsActivity
 import org.mirai.zhao.dice.console.ConsoleService
+import org.mirai.zhao.dice.console.OnLogChangedListener
 
 class LoginActivity : AppCompatActivity() {
-
+    private lateinit var loginProcessPrint: TextView
     private lateinit var loginViewModel: LoginViewModel
     private var miraiProtocol:BotConfiguration.MiraiProtocol=BotConfiguration.MiraiProtocol.ANDROID_PHONE
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,6 +37,7 @@ class LoginActivity : AppCompatActivity() {
         val username = findViewById<EditText>(R.id.username)
         val password = findViewById<EditText>(R.id.password)
         val login = findViewById<Button>(R.id.login)
+        val loginProcessPrint = findViewById<TextView>(R.id.loginProcessPrint)
         val loading = findViewById<ProgressBar>(R.id.loading)
         val deleteAccounts = findViewById<Button>(R.id.deleteAccounts)
         val radioGroup = findViewById<RadioGroup>(R.id.radioGroup)
@@ -44,11 +52,41 @@ class LoginActivity : AppCompatActivity() {
                 else -> BotConfiguration.MiraiProtocol.ANDROID_PAD
             }
         }
+        ConsoleService.onLogChangedListener = object : OnLogChangedListener {
+            val maxLogLine = 10
+            val logs=ArrayList<Spanned>()
+            init{
+                loginProcessPrint.visibility = View.GONE
+                loginProcessPrint.text = ""
+                repeat(maxLogLine){
+                    logs.add(Html.fromHtml(""))
+                }
+            }
+            override fun logChanged(text: String) {
+                Handler(Looper.getMainLooper()).post {
+                    if(loginProcessPrint.visibility == View.VISIBLE) {
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                            logs.add(Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY))
+                        else
+                            logs.add(Html.fromHtml(text))
+                        if(logs.size>=maxLogLine){
+                            logs.removeAt(0)
+                        }
+                        loginProcessPrint.text = ""
+                        for(log in logs){
+                            loginProcessPrint.append(log)
+                            loginProcessPrint.append(Html.fromHtml("<br/>"))
+                        }
+                    }
+                }
+            }
+        }
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory(this)).get(LoginViewModel::class.java)
 
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
             loading.visibility = View.GONE
+            loginProcessPrint.visibility = View.GONE
             // disable login button unless both username / password is valid
             login.isEnabled = loginState.isDataValid
 
@@ -57,22 +95,22 @@ class LoginActivity : AppCompatActivity() {
             }
             if (loginState.passwordError != null) {
                 if (loginState.serverResult != null) {
-                    password.error = "服务器返回("+loginState.serverResult+")"+"\n"+getString(loginState.passwordError)
-                }else{
+                    password.error = "服务器返回(" + loginState.serverResult + ")" + "\n" + getString(loginState.passwordError)
+                } else {
                     password.error = getString(loginState.passwordError)
                 }
             }
-            login.isEnabled=true
+            login.isEnabled = true
         })
 
         loginViewModel.loginResult.observe(this@LoginActivity, Observer {
             val loginResult = it ?: return@Observer
-
+            loginProcessPrint.visibility = View.GONE
             loading.visibility = View.GONE
-            login.isEnabled=true
+            login.isEnabled = true
             if (loginResult.error != null) {
                 showLoginFailed(loginResult.error)
-            }else{
+            } else {
                 updateUiWithUser()
             }
             setResult(Activity.RESULT_OK)
@@ -114,8 +152,9 @@ class LoginActivity : AppCompatActivity() {
 
             login.setOnClickListener {
                 loading.visibility = View.VISIBLE
+                loginProcessPrint.visibility = View.VISIBLE
                 login.isEnabled=false
-                loginViewModel.login(username.text.toString(), password.text.toString(),miraiProtocol)
+                loginViewModel.login(username.text.toString(), password.text.toString(), miraiProtocol)
             }
         }
     }
@@ -136,7 +175,7 @@ class LoginActivity : AppCompatActivity() {
 }
 
 /**
- * Extension function to simplify setting an afterTextChanged action to EditText components.
+ * Extension java.util.function to simplify setting an afterTextChanged action to EditText components.
  */
 fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
     this.addTextChangedListener(object : TextWatcher {

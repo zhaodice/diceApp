@@ -1,0 +1,10 @@
+下载：
+https://maven.aliyun.com/repository/public/net/mamoe/mirai-core-all/2.6.0/mirai-core-all-2.6.0-all.jar
+https://maven.aliyun.com/repository/public/net/mamoe/mirai-console/2.6.0/mirai-console-2.6.0-all.jar
+
+mirai console: internal/plugin/PluginManagerImpl.kt
+override val pluginsPath: Path = MiraiConsole.rootPath.resolve("plugins").apply { mkdir() }
+改成
+override val pluginsPath: Path = Paths.get(System.setProperty("zhao.dice.plugins.dir","/data/data/org.mirai.zhao.dice/app_plugins")).apply { mkdir() }
+并二次编译
+（PS:正常情况下只需要替换已经编译了的 internal/plugin/PluginManagerImpl.class）文件就行了

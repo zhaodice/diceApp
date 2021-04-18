@@ -1,6 +1,7 @@
 package org.mirai.zhao.dice.activity
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.webkit.*
@@ -56,26 +57,26 @@ class UnsafeLoginActivity : AppCompatActivity() {
     }
 
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "AddJavascriptInterface")
     private fun initWebView() {
         //滑块验证码js注入，便于获取ticks
         unsafeLoginWeb.webViewClient = object : WebViewClient() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 if (url != null && view != null) {
-
-                    println("webview:$url")
+                    println("Load WebView: $url")
                     if (url.startsWith("https://ssl.captcha.qq.com/template/wireless_mqq_captcha.html")) {//滑块验证码
                         notice.text = getString(R.string.slidNotice)
                         //ToastUtils.show(this@UnsafeLoginActivity,"滑的时候注意了，尽可能在图案里滑，别滑到下面的空白区域，否则会很不丝滑。",Toast.LENGTH_LONG)
                     }
                     println("界面加载完毕！注入JS...")
-                    view.evaluateJavascript("""
-                                    mqq.invoke = function(a,b,c){ return bridge.invoke(a,b,JSON.stringify(c))}
-                                """.trimIndent()) {}
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+                        view.evaluateJavascript("mqq.invoke = function(a,b,c){return bridge.invoke(a,b,JSON.stringify(c))}") {}
+                    else
+                        view.loadUrl("javascript:(function(){mqq.invoke = function(a,b,c){return bridge.invoke(a,b,JSON.stringify(c))}})();")
                 }
                 super.onPageFinished(view, url)
-            }
+            }/*
             override fun shouldInterceptRequest(view: WebView, webResourceRequest: WebResourceRequest): WebResourceResponse? {
 
                 val u = webResourceRequest.url
@@ -100,7 +101,7 @@ class UnsafeLoginActivity : AppCompatActivity() {
                 }
 
                 return super.shouldInterceptRequest(view, webResourceRequest)
-            }
+            }*/
 
 
 //            override fun shouldInterceptRequest(
@@ -124,7 +125,7 @@ class UnsafeLoginActivity : AppCompatActivity() {
                 }
                 return super.onConsoleMessage(consoleMessage)
             }
-
+            /*
             override fun onJsPrompt(view: WebView?, url: String?, message: String?, defaultValue: String?, result: JsPromptResult?): Boolean {
                 //检测到滑块验证码滑动完成，反馈ticks
                 if("MiraiSelenium - ticket"==message &&result!=null&& defaultValue!=null){
@@ -133,7 +134,7 @@ class UnsafeLoginActivity : AppCompatActivity() {
                     return true
                 }
                 return super.onJsPrompt(view, url, message, defaultValue, result)
-            }
+            }*/
         }
         unsafeLoginWeb.settings.apply {
             javaScriptEnabled = true

@@ -1,7 +1,8 @@
 <resources>
     <string name="notice_1">【点击本提示切换为简易教程】\n
         软件开发者：赵怡然\n
-        群号:323956301 978563358\n
+        群号: 323956301 978563358 1006272130\n
+        官方网站： trpgbot.com \n
         软件开发者QQ: 484546762\n
         保留所有解释权。</string>
     <string name="notice_2">使用方案【再点击则隐藏】：\n
@@ -55,4 +56,22 @@
     <string name="watch">WATCH</string>
     <string name="pad">ANDROID PAD</string>
     <string name="android_phone">ANDROID PHONE</string>
+    <string name="keeplive">使APP在后台可以活得更久</string>
+    <string name="loginprocessprint">LoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+        LoginProcessPrintLoginProcessPrintLoginProcessPrintLoginProcessPrint\n
+    </string>
 </resources>

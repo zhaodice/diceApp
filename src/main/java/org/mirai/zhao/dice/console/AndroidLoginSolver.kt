@@ -1,7 +1,5 @@
 package org.mirai.zhao.dice.console
 
-import android.R.attr.data
-import android.app.PendingIntent
 import android.content.Intent
 import android.util.Log
 import kotlinx.coroutines.CompletableDeferred
@@ -13,7 +11,8 @@ import org.mirai.zhao.dice.activity.CaptchaActivity
 import org.mirai.zhao.dice.activity.UnsafeLoginActivity
 
 
-class AndroidLoginSolver private constructor() : LoginSolver() {
+class AndroidLoginSolver : LoginSolver() {
+
     lateinit var verificationResult: CompletableDeferred<String>
     lateinit var captchaData: ByteArray
     lateinit var url: String
@@ -63,14 +62,14 @@ class AndroidLoginSolver private constructor() : LoginSolver() {
     }
 
     private fun sendVerifyNotification() {
-        if(NotificationFactory.context!=null) {
+        if(AppContext.context!=null) {
             Log.d("zdice!", "陌生设备验证！$url")
             Log.d("zdice!", "已自动启动activity")
-            val notifyIntent = Intent(NotificationFactory.context, UnsafeLoginActivity::class.java).apply {
+            val notifyIntent = Intent(AppContext.context, UnsafeLoginActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK// or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             notifyIntent.putExtra("url", url)
-            NotificationFactory.context!!.startActivity(notifyIntent)
+            AppContext.context!!.startActivity(notifyIntent)
         }
     }
 }

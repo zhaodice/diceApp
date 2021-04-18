@@ -10,8 +10,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class AndroidMiraiLogger(override val identity: String?) : MiraiLoggerPlatformBase() {
-
+class AndroidMiraiLogger : MiraiLoggerPlatformBase() {
+    companion object{
+        val INSTANCE = AndroidMiraiLogger()
+    }
+    override val identity: String = "main"
     @JvmField
     val logStorage=LogBuilder().limit(500)
     class LogBuilder {
@@ -87,8 +90,10 @@ class AndroidMiraiLogger(override val identity: String?) : MiraiLoggerPlatformBa
 
     override fun error0(message: String?, e: Throwable?) {
         if (message != null) {
-            e?.printStackTrace()
             logStorage.append(LEVEL_ERROR,message)
+            if(e!=null){
+                logStorage.append(LEVEL_ERROR,e.stackTraceToString())
+            }
         }
     }
 

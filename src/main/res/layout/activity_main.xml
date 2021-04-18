@@ -139,5 +139,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/reboot" />
+        <Button
+            android:tag="enable"
+            android:id="@+id/keeplive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/keeplive" />
     </LinearLayout>
 </ScrollView>

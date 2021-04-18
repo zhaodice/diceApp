@@ -32,6 +32,20 @@ class MiraiConsoleActivity : Activity() {
     lateinit var tv: TextView
     private lateinit var btn: Button
     lateinit var scrollView:ScrollView
+    private val onLogChangedListener = object : OnLogChangedListener {
+        override fun logChanged(text: String) {
+            Handler(Looper.getMainLooper()).post {
+                if (autoRoll) {
+                    scrollView.fullScroll(ScrollView.FOCUS_DOWN)
+                }
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                    tv.append(Html.fromHtml(text,Html.FROM_HTML_MODE_LEGACY))
+                else
+                    tv.append(Html.fromHtml(text))
+                tv.append(Html.fromHtml("<br/>"))
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.mirai_console)
@@ -62,30 +76,21 @@ class MiraiConsoleActivity : Activity() {
             Toast.makeText(this, "哎呀，mirai服务还没准备好，再多等一会吧>_<，一般30秒内ok~", Toast.LENGTH_LONG).show()
             finish()
         } else {
-            ConsoleService.onLogChangedListener = object : OnLogChangedListener {
-                override fun logChanged(text: String) {
-                    Handler(Looper.getMainLooper()).post {
-                        if (autoRoll) {
-                            scrollView.fullScroll(ScrollView.FOCUS_DOWN)
-                        }
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                            tv.append(Html.fromHtml(text,Html.FROM_HTML_MODE_LEGACY))
-                        else
-                            tv.append(Html.fromHtml(text))
-                        tv.append(Html.fromHtml("<br/>"))
-                    }
-                }
-            }
+            ConsoleService.onLogChangedListener = onLogChangedListener
             val scrollView = findViewById<ScrollView>(R.id.scrollView)
             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
-            if (ConsoleService.androidMiraiLogger != null)
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                    tv.text = Html.fromHtml(ConsoleService.androidMiraiLogger!!.logStorage.build(),Html.FROM_HTML_MODE_LEGACY)
-                else
-                    tv.text = Html.fromHtml(ConsoleService.androidMiraiLogger!!.logStorage.build())
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                tv.text = Html.fromHtml(ConsoleService.androidMiraiLogger.logStorage.build(),Html.FROM_HTML_MODE_LEGACY)
+            else
+                tv.text = Html.fromHtml(ConsoleService.androidMiraiLogger.logStorage.build())
         }
         val scrollView = findViewById<ScrollView>(R.id.scrollView)
         scrollView.fullScroll(ScrollView.FOCUS_DOWN)
         //tv.setText(ConsoleService.frontEnd.getMainLogger().toString());
+    }
+
+    override fun onPostResume() {
+        ConsoleService.onLogChangedListener = onLogChangedListener
+        super.onPostResume()
     }
 }

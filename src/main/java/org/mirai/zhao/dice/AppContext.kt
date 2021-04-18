@@ -3,29 +3,25 @@ package org.mirai.zhao.dice
 import android.app.Application
 import android.content.Context
 import android.os.Environment.getExternalStorageDirectory
+import androidx.multidex.MultiDex
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.mirai.zhao.dice.crash.CrashHandler
 import org.mirai.zhao.dice.console.ConsoleService
 import java.io.File
 import java.security.Security
 
-class AppContext : Application() {
-    var dataStorage: String? = null
-    val privateStorage: String? = null
-    override fun onCreate() {
-        // Remove the OS provided bouncy castle provider
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
-        // Add the bouncy castle provider from the added library
-        Security.addProvider(BouncyCastleProvider())
 
-        System.setProperty("mirai.slider.captcha.supported","1")
-        val crashHandler = CrashHandler.getInstance()
-        crashHandler.init()
+class AppContext : Application() {
+    val privateStorage: String? = null
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
+        MultiDex.install(this)
+    }
+    override fun onCreate() {
         //dataStorage = getExternalFilesDir(null).toString()
         dataStorage = getExternalStorageDirectory().path
         //privateStorage = getExternalStorageDirectory().path
         miraiDir = "$dataStorage/MiraiDice"
-        pluginsDir = getDir("plugins",0).absolutePath;//"$miraiDir/plugins"
+        pluginsDir = getDir("plugins", 0).absolutePath;//"$miraiDir/plugins"
         zhaoDice = "$miraiDir/data/ZhaoDice"
         zhaoDiceData = "$zhaoDice/cocdata/data"
         zhaoDiceDeviceInfo = "$zhaoDiceData/deviceInfo"
@@ -33,30 +29,19 @@ class AppContext : Application() {
         val f=File(miraiDir)
         if(!f.exists())
             f.mkdir()
-        /*
-        if (Companion.consoleService == null) {
-            val oldStorage=File("${getExternalStorageDirectory().getPath()}/miraiDice/plugins/ZhaoDice")
-            val oldStorageRename=File("${getExternalStorageDirectory().getPath()}/miraiDice/plugins/ZhaoDice_")
-            if(oldStorage.exists()){
-                FileService.copy(oldStorage.absolutePath,zhaoDice)
-                oldStorage.renameTo(oldStorageRename)
-            }
-            object : Thread() {
-                override fun run() {
-                    //插件只初始化一次
-                    val newjar = File(pluginsDir, "mirai-zhao.jar")
-                    UpdateService.autoUpdate(newjar)
-                    if(newjar.exists())
-                        println("自动更新mirai 赵骰插件成功！")
-                    else {
-                        Util.CopyAssets(this@AppContext, pluginsDir, newjar.name)
-                        println("Wrote mirai-zhao.jar -> $pluginsDir")
-                    }
-                    startControlService(this@AppContext)
-                    super.run()
-                }
-            }.start()
-        }*/
+        System.setProperty("zhao.dice.plugins.dir",pluginsDir)
+        System.setProperty("mirai.slider.captcha.supported", "1")
+        context = this
+        try {
+            val bouncyCastleProvider=BouncyCastleProvider()
+            // Remove the OS provided bouncy castle provider
+            Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
+            // Add the bouncy castle provider from the added library
+            //Security.addProvider(BouncyCastleProvider()) //坑死我了，这个代码在安卓5.0上会造成闪退！！
+            Security.insertProviderAt(bouncyCastleProvider, 1)
+        }catch (e:Throwable){
+            e.printStackTrace()
+        }
         super.onCreate()
     }
 
@@ -64,6 +49,7 @@ class AppContext : Application() {
         get() = Companion.consoleService
 
     companion object {
+        lateinit var dataStorage: String
         @JvmField
         var context: AppContext? = null
         var consoleService: ConsoleService? = null
@@ -76,4 +62,6 @@ class AppContext : Application() {
         var zhaoDiceDeviceInfo: String = ""
         var autoLoginFile: String = ""
     }
+
+
 }
