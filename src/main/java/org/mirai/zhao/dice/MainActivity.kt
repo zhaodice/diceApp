@@ -10,17 +10,18 @@ import android.content.SharedPreferences
 import android.graphics.Color
 import android.net.Uri
 import android.os.*
-import android.os.Environment.getExternalStorageDirectory
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import android.widget.AdapterView.OnItemSelectedListener
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import fightcent.permissionrequest.PermissionRequest
 import fightcent.permissionrequest.PermissionRequestListener
+import org.mirai.zhao.dice.activity.AccountsActivity
 import org.mirai.zhao.dice.activity.MiraiConsoleActivity
 import org.mirai.zhao.dice.activity.ui.login.LoginActivity
 import org.mirai.zhao.dice.console.ConsoleService.Companion.startControlService
@@ -33,7 +34,12 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
     var alterDialog: AlertDialog? = null
-    private var selfuin: String? = null
+    private var currentEditQQ
+        get() = AppContext.currentEditQQ
+        set(value) {
+            AppContext.currentEditQQ = value
+            storage = JsonConfigOperator(AppContext.zhaoDiceData)
+        }
     private lateinit var switch_openDice: SwitchCompat
     private lateinit var switch_publicMode: SwitchCompat
     private lateinit var switch_keyAutoReply: SwitchCompat
@@ -47,16 +53,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var notice: TextView
     private var settings_layout: ScrollView? = null
     private var loadedExtensionalOption=false
-    var autoLoginFile // 自动登陆文件
-            : File? = null
     private lateinit var button_changeQQ: Button
     private lateinit var reboot: Button
     private lateinit var button_autoLogin: Button
     private var isSelectAccountsShowing=false
-    val storage //存储工具类（分离自cocHelper）
-            : JsonConfigOperator by lazy{ JsonConfigOperator(AppContext.zhaoDiceData) }
-    lateinit var qqArray //qq信息数组
-            : Array<String?>
+    private var storage //存储工具类（分离自cocHelper）
+            : JsonConfigOperator = JsonConfigOperator(AppContext.zhaoDiceData)
+    private var qqArray = AccountsActivity.getAccountsList() //qq信息数组
+
     var status_readDataOK //插件是否安装 QQ账号数据是否能读取
             = false
 
@@ -250,7 +254,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         shareData = getSharedPreferences("app", MODE_PRIVATE)
-        selfuin = shareData.getString("selfuin", null)
+        currentEditQQ = shareData.getString("selfuin", null)
         val consoleButton:Button=findViewById(R.id.consoleEnter)
         consoleButton.setOnClickListener {
             val i = Intent(this@MainActivity, MiraiConsoleActivity::class.java)
@@ -298,6 +302,7 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(i, 0)
         }
         button_changeQQ.setOnClickListener {
+            qqArray = AccountsActivity.getAccountsList()//更新QQ信息
             doShowQQSelection(this@MainActivity)
         }
         button_saveData.setOnClickListener { if (doInterfaceDataSaving()) Toast.makeText(this@MainActivity, "存好了！", Toast.LENGTH_LONG).show() }
@@ -409,53 +414,32 @@ class MainActivity : AppCompatActivity() {
             }
             loadedExtensionalOption=true
         }
-        autoLoginFile = File(AppContext.zhaoDiceData + "/autoLogin.txt")
-        val zhaoDiceDataObj = File(AppContext.zhaoDiceData)
-        if (!zhaoDiceDataObj.exists()) zhaoDiceDataObj.mkdirs()
-        val files = zhaoDiceDataObj.listFiles()
-        if (files != null) {
-            val qqs = ArrayList<String>()
-            for (file in files) {
-                val filename = file.name
-                if (filename.startsWith("Global_")) {
-                    val qq = filename.substring(7, filename.indexOf("."))
-                    if (TextUtils.isDigitsOnly(qq)) {
-                        qqs.add(qq)
-                    } else {
-                        file.delete()
-                    }
+        val accounts = AccountsActivity.getAccountsList()
+        if (accounts.size>0) {
+            if (accounts.size>1) { //大于1个骰娘账号，让用户自己选择
+                if(currentEditQQ==null) {
+                    currentEditQQ = qqArray[0]
+                    shareData.edit().putString("selfuin", currentEditQQ).apply()
                 }
-            }
-            if (qqs.size > 0) {
-                if (qqs.size > 1) { //大于1个骰娘账号，让用户自己选择
-                    qqArray = arrayOfNulls(qqs.size)
-                    for (i in qqs.indices) {
-                        qqArray[i] = qqs[i]
-                    }
-                    if(selfuin==null) {
-                        selfuin = qqArray[0]
-                        shareData.edit().putString("selfuin", selfuin).apply()
-                    }
-                    button_changeQQ.isEnabled = true
-                } else {
-                    //才一个骰娘号，不让选择
-                    selfuin = qqs[0]
-                }
-                status_readDataOK = true
-                if(!shareData.getBoolean("readNotice", false)) {
-                    shareData.edit().putBoolean("readNotice", true).apply()
-                    val alterDialog = AlertDialog.Builder(this@MainActivity)
-                    alterDialog.setTitle("第一次使用必读")
-                    alterDialog.setMessage("APP默认情况下可能会被系统杀后台，无法长期挂机，如有需要长时间稳定运行，请自行搜索自己手机型号后台白名单相关设置(包括省电，清内存等等)，如百度：“华为后台设置教程”")
-                    alterDialog.setPositiveButton("确认") { dialogInterface, _ ->
-                        ignoreBatteryOptimization(this)
-                        dialogInterface.cancel()
-                    }
-                    alterDialog.create().show()
-                }
+                button_changeQQ.isEnabled = true
             } else {
-                showAlterDialog("你需要登陆骰娘账号作为骰娘才能正常使用，请点击【骰娘账号管理】")
+                //才一个骰娘号，不让选择
+                currentEditQQ = qqArray[0]
             }
+            status_readDataOK = true
+            if(!shareData.getBoolean("readNotice", false)) {
+                shareData.edit().putBoolean("readNotice", true).apply()
+                val alterDialog = AlertDialog.Builder(this@MainActivity)
+                alterDialog.setTitle("第一次使用必读")
+                alterDialog.setMessage("APP默认情况下可能会被系统杀后台，无法长期挂机，如有需要长时间稳定运行，请自行搜索自己手机型号后台白名单相关设置(包括省电，清内存等等)，如百度：“华为后台设置教程”")
+                alterDialog.setPositiveButton("确认") { dialogInterface, _ ->
+                    ignoreBatteryOptimization(this)
+                    dialogInterface.cancel()
+                }
+                alterDialog.create().show()
+            }
+        } else {
+            showAlterDialog("你需要登陆骰娘账号作为骰娘才能正常使用，请点击【骰娘账号管理】")
         }
         doInterfaceUpdate()
     }
@@ -470,8 +454,8 @@ class MainActivity : AppCompatActivity() {
                         e.printStackTrace()
                     }
                 }
-                if (current_sentencesThem != null && selfuin != null) {
-                    val id=selfuin as String
+                if (current_sentencesThem != null && currentEditQQ != null) {
+                    val id=currentEditQQ as String
                     Handler(Looper.getMainLooper()).post {
                         switch_publicMode.isChecked = storage.getGlobalBoolean(id, "IS_PUBLIC_DICE")
                         switch_openDice.isChecked = storage.getGlobalBoolean(id, "OPEN_IN_GLOBAL")
@@ -488,21 +472,27 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     if (!status_readDataOK) MainActivityHand.setTextView(status, "错误：QQ账号未正确登陆", Color.RED)
                 }
-                MainActivityHand.setTextView(textview_selfuin, selfuin, -0x993301)
+                MainActivityHand.setTextView(textview_selfuin, currentEditQQ, -0x993301)
                 super.run()
             }
         }.start()
     }
 
     private fun doShowQQSelection(context: MainActivity) {
-        if(this::qqArray.isInitialized) {
+        if(qqArray.size>1) {
             if(!isSelectAccountsShowing) {
                 synchronized(this){
-                    val builder = AlertDialog.Builder(context, android.R.style.Theme_Material_Light_Dialog)
+                    val view=if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
+                        android.R.style.Theme_Material_Light_Dialog
+                    else
+                        android.R.style.Theme_DeviceDefault_Light_Dialog
+                    val builder = AlertDialog.Builder(context, view)
                     builder.setTitle("请选择已经登陆的骰娘QQ号")
-                    builder.setItems(qqArray) { _, which ->
-                        context.selfuin = qqArray[which]
-                        shareData.edit().putString("selfuin", selfuin).apply()
+                    builder.setItems(Array(qqArray.size){
+                        qqArray[it]
+                    }) { _, which ->
+                        context.currentEditQQ = qqArray[which]
+                        shareData.edit().putString("selfuin", currentEditQQ).apply()
                         doInterfaceUpdate()
                         isSelectAccountsShowing = false
                     }
@@ -520,7 +510,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun doInterfaceDataSaving(): Boolean {
         if (dataLoaded) {
-            val id=selfuin as String
+            val id=currentEditQQ as String
             storage.saveGlobalBoolean(id, "IS_PUBLIC_DICE", switch_publicMode.isChecked)
             storage.saveGlobalBoolean(id, "OPEN_IN_GLOBAL", switch_openDice.isChecked)
             storage.saveGlobalBoolean(id, "KEY_AUTO_REPLY", switch_keyAutoReply.isChecked)

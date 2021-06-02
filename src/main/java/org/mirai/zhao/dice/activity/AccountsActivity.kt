@@ -7,6 +7,7 @@ import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import org.mirai.zhao.dice.AppContext
 import org.mirai.zhao.dice.R
+import org.mirai.zhao.dice.file.FileService
 import org.mirai.zhao.dice.file.TextFileOperator
 import java.io.File
 import java.lang.StringBuilder
@@ -16,7 +17,7 @@ class AccountsActivity : AppCompatActivity() {
     companion object {
         private val autoLoginFile: File by lazy { File(AppContext.autoLoginFile) }
         private val accountListData : ArrayList<String> by lazy { getAccountsList() }
-        private fun getAccountsList(): ArrayList<String> {
+        fun getAccountsList(): ArrayList<String> {
             val arraylist=ArrayList<String>()
             val accounts_text= TextFileOperator.read(autoLoginFile)
             val accounts = accounts_text.split("\n")

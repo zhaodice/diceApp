@@ -1,12 +1,18 @@
 package org.mirai.zhao.dice.activity
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.webkit.*
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.GlobalScope
@@ -14,29 +20,50 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.mirai.zhao.dice.R
+import org.mirai.zhao.dice.activity.ui.login.LoginActivity
 import org.mirai.zhao.dice.console.AndroidLoginSolver
 
 
 class UnsafeLoginActivity : AppCompatActivity() {
     private lateinit var unsafeLoginWeb : WebView
     private lateinit var refreshUnsafeWeb: SwipeRefreshLayout
-    private lateinit var forceStopUnsafeLogin:Button
+    private lateinit var copyUrlBtn:Button
     private lateinit var notice:TextView
-    /*companion object{
+    private var enforceFinishedStep = 0
+    companion object{
         private const val disguisedUserAgent =
                 "Mozilla/5.0 (Linux; Android 5.1; vivo X6Plus D Build/LMY47I; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045330 Mobile Safari/537.36 V1_AND_SQ_7.1.0_0_TIM_D TIM/3.0.0.2858 QQ/6.5.5  NetType/WIFI WebP/0.3.0 Pixel/1080"
-    }*/
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_unsafe_login)
         refreshUnsafeWeb=findViewById(R.id.refresh_unsafe_web)
         unsafeLoginWeb=findViewById(R.id.unsafe_login_web)
-        forceStopUnsafeLogin=findViewById(R.id.forceStopUnsafeLogin)
+        copyUrlBtn=findViewById(R.id.forceStopUnsafeLogin)
         notice=findViewById(R.id.notice)
-        forceStopUnsafeLogin.setOnClickListener{
-            authFinish("")
+
+        if(enforceFinishedStep==0){
+            copyUrlBtn.text = "无法完成身份验证？点我复制链接！"
+            copyUrlBtn.setOnClickListener{
+                val clip: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val myClip = ClipData.newPlainText("text", unsafeLoginWeb.url)
+                clip.setPrimaryClip(myClip)
+
+                val alterDialog = AlertDialog.Builder(this)
+                alterDialog.setTitle("成功")
+                alterDialog.setMessage("链接已经复制到了剪切板，现在你需要做\n" +
+                        "1.【不要返回，按HOME切换】切换APP到你正准备认证的QQ\n" +
+                        "2.然后粘贴链接到没人看见的地方，比如“我的电脑”\n" +
+                        "3.点入链接，进入二维码认证\n" +
+                        "4.长按二维码，点击“扫描二维码”，完成认证\n" +
+                        "5.回到本APP，点击“我已在外面完成认证”")
+                alterDialog.setPositiveButton("我已在外面完成认证") { dialogInterface, _ -> dialogInterface.cancel() }
+                alterDialog.setOnCancelListener { authFinish("") }
+                alterDialog.show()
+            }
         }
+
         initWebView()
         val url= intent.getStringExtra("url")
         if(url==null) {
@@ -70,51 +97,45 @@ class UnsafeLoginActivity : AppCompatActivity() {
                         //ToastUtils.show(this@UnsafeLoginActivity,"滑的时候注意了，尽可能在图案里滑，别滑到下面的空白区域，否则会很不丝滑。",Toast.LENGTH_LONG)
                     }
                     println("界面加载完毕！注入JS...")
+                    val js = "mqq.invoke = function(a,b,c){return bridge.invoke(a,b,JSON.stringify(c))};"
                     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-                        view.evaluateJavascript("mqq.invoke = function(a,b,c){return bridge.invoke(a,b,JSON.stringify(c))}") {}
+                        view.evaluateJavascript(js) {}
                     else
-                        view.loadUrl("javascript:(function(){mqq.invoke = function(a,b,c){return bridge.invoke(a,b,JSON.stringify(c))}})();")
+                        view.loadUrl("javascript:$js")
                 }
                 super.onPageFinished(view, url)
-            }/*
+            }
+            /*
             override fun shouldInterceptRequest(view: WebView, webResourceRequest: WebResourceRequest): WebResourceResponse? {
-
-                val u = webResourceRequest.url
-                //Log.d("zhaodice", "zhaodice u.protocol=" + u.scheme + " u.path=" + u.path + " u.query=" + u.query)
-                if (u.scheme == "jsbridge") {
-                    if (u.path == "/openUrl") {
-                        val query=u.query
-                        if(query!=null) {
-                            val json=query.substring(2)//去掉p=
-                            //Log.d("zhaodice","zhaodice-B-"+json)
-                            try {
-                                val goUrl=JSONObject(json).getString("url")
-                                view.post {
-                                    unsafeLoginWeb.loadUrl(goUrl)
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                    val u = webResourceRequest.url
+                    //Log.d("zhaodice", "zhaodice u.protocol=" + u.scheme + " u.path=" + u.path + " u.query=" + u.query)
+                    if (u.scheme == "jsbridge") {
+                        if (u.path == "/openUrl") {
+                            val query = u.query
+                            if (query != null) {
+                                val json = query.substring(2)//去掉p=
+                                //Log.d("zhaodice","zhaodice-B-"+json)
+                                try {
+                                    val goUrl = JSONObject(json).getString("url")
+                                    view.post {
+                                        unsafeLoginWeb.loadUrl(goUrl)
+                                    }
+                                    //.d("zhaodice","zhaodice-C-"+goUrl)
+                                } catch (e: Throwable) {
+                                    //Log.d("zhaodice","zhaodice-C-"+e.message)
                                 }
-                                //.d("zhaodice","zhaodice-C-"+goUrl)
-                            }catch (e:Throwable){
-                                //Log.d("zhaodice","zhaodice-C-"+e.message)
                             }
+                        }
+                        try {
+                            return WebResourceResponse("text/plain", "UTF-8", assets.open("empty.txt"))
+                        } catch (e: IOException) {
+                            e.printStackTrace()
                         }
                     }
                 }
-
                 return super.shouldInterceptRequest(view, webResourceRequest)
             }*/
-
-
-//            override fun shouldInterceptRequest(
-//                view: WebView?,
-//                request: WebResourceRequest?
-//            ): WebResourceResponse? {
-//                if (request != null) {
-//                    if ("https://report.qqweb.qq.com/report/compass/dc00898" in request.url.toString()) {
-//                        authFinish()
-//                    }
-//                }
-//                return super.shouldInterceptRequest(view, request)
-//            }
         }
         unsafeLoginWeb.addJavascriptInterface(Bridge(), "bridge")
         unsafeLoginWeb.webChromeClient = object : WebChromeClient() {
@@ -139,7 +160,7 @@ class UnsafeLoginActivity : AppCompatActivity() {
         unsafeLoginWeb.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
-            //userAgentString=disguisedUserAgent
+            userAgentString=disguisedUserAgent
         }
 
     }

@@ -10,13 +10,12 @@
         2.输入骰娘账号并登陆\n
         3.完成登陆验证。\n
         4.重启本软件，[状态检测]为浅蓝色即可正常使用</string>
-    <string name="app_name">DICE X2!</string>
+    <string name="app_name">DICE X3!</string>
     <string name="switch_openDice">打开COC骰子</string>
     <string name="switch_publicMode">公骰模式</string>
     <string name="switch_handleMySelf">响应自己的指令</string>
     <string name="switch_keyAutoReply">关键词自动回复</string>
     <string name="switch_bootStart">开机自启动</string>
-    <string name="forceStopUnsafeLogin">卡在验证成功“前往登录QQ”，点我</string>
     <string name="customConfig">自定义配置</string>
     <string name="switch_wayToReply">引用原用户内容</string>
     <string name="consoleEnter">查看控制台</string>

@@ -13,19 +13,23 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.DeviceInfo
 import org.mirai.zhao.dice.AppContext
 import org.mirai.zhao.dice.R
 import org.mirai.zhao.dice.activity.MiraiConsoleActivity
-import org.mirai.zhao.dice.file.FileService
 import org.mirai.zhao.dice.file.Assets
+import org.mirai.zhao.dice.file.FileService
 import org.mirai.zhao.dice.web.UpdateService
 import java.io.File
-import java.io.OutputStream
 import java.io.PrintStream
+import java.lang.reflect.Field
+import java.lang.reflect.Modifier
 import java.nio.file.Paths
 
 
@@ -39,41 +43,8 @@ class ConsoleService : Service() {
         return null
     }
     companion object {
-        @JvmField
         var androidMiraiLogger: AndroidMiraiLogger = AndroidMiraiLogger.INSTANCE
-        @JvmField
         var onLogChangedListener: OnLogChangedListener?=null
-        //const val START_SERVICE = 0
-        //const val STOP_SERVICE = 1
-        //const val NOTIFICATION_ID = 1
-        //const val OFFLINE_NOTIFICATION_ID = 3
-        //const val TAG = "BOT_SERVICE"
-        /*
-        @JvmField
-        val miraiDir = "$sdcard/MiraiDice"
-        @JvmField
-        val pluginsDir = "$miraiDir/plugins"
-        @JvmField
-        val zhaoDice = "$pluginsDir/ZhaoDice/cocdata"
-        @JvmField
-        val zhaoDiceData = "$zhaoDice/data"
-        @JvmField
-        val zhaoDiceDeviceInfo= "$zhaoDiceData/deviceInfo"
-        @JvmField
-        val autoLoginFile= "$zhaoDiceData/autoLogin.txt"
-
-        init {
-            var f= File(zhaoDice)
-            if(!f.exists()){
-                val k=f.mkdirs()
-                println(k)
-            }
-            f= File(pluginsDir)
-            if(!f.exists()){
-                f.mkdirs()
-            }
-        }
-*/
         fun newPluginFile():File{
             return File(AppContext.pluginsDir, "mirai-zhao-m2.jar")
         }
@@ -111,12 +82,13 @@ class ConsoleService : Service() {
             val zhaoDiceDeviceInfo= File(AppContext.zhaoDiceDeviceInfo)
             if(!zhaoDiceDeviceInfo.exists())
                 zhaoDiceDeviceInfo.mkdirs()
+            val virtualDeviceFile = File("${AppContext.zhaoDiceDeviceInfo}/$qq.json")
             val bot= BotFactory.newBot(qq.toLong(), password) {
-                //protocol= BotConfiguration.MiraiProtocol.ANDROID_WATCH
                 protocol= setProtocol
-                fileBasedDeviceInfo("${AppContext.zhaoDiceDeviceInfo}/$qq.json")
+                deviceInfo = AndroidDevice.getFileBasedDeviceInfoSupplier(virtualDeviceFile,false)//使用虚拟设备登陆
                 loginSolver=AndroidLoginSolver.INSTANCE
-                cacheDir = File(AppContext.zhaoDice+"/.MiraiCache_$protocol/$qq")
+                cacheDir = File(AppContext.zhaoDice + "/.MiraiCache_$protocol/$qq")
+                //enableContactCache()
             }
             //System.out.println("使用设备文件："+"${AppContext.zhaoDiceDeviceInfo}/$qq.json")
             GlobalScope.launch(CoroutineExceptionHandler { _, loginFailedException ->
@@ -128,7 +100,6 @@ class ConsoleService : Service() {
                 //File("${AppContext.zhaoDiceDeviceInfo}/$qq.json").delete()
             }) {
                 bot.login()
-
                 loginResult.complete("")
             }
             return bot
@@ -150,7 +121,7 @@ class ConsoleService : Service() {
                 try {
                     initPlugin(this)
                     UpdateService.autoUpdate(newPluginFile())
-                    consoleFrontEnd = AndroidMiraiConsole(baseContext, Paths.get(getDir("odex",0).apply { mkdirs() }.absolutePath))
+                    consoleFrontEnd = AndroidMiraiConsole(baseContext, Paths.get(getDir("odex", 0).apply { mkdirs() }.absolutePath))
                     consoleFrontEnd.start()
                     System.setOut(
                             PrintStream(

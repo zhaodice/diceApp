@@ -1,6 +1,11 @@
 下载：
-https://maven.aliyun.com/repository/public/net/mamoe/mirai-core-all/2.6.0/mirai-core-all-2.6.0-all.jar
-https://maven.aliyun.com/repository/public/net/mamoe/mirai-console/2.6.0/mirai-console-2.6.0-all.jar
+https://maven.aliyun.com/repository/public/net/mamoe/mirai-core-all/2.6.2/mirai-core-all-2.6.2-all.jar
+https://maven.aliyun.com/repository/public/net/mamoe/mirai-console/2.6.2/mirai-console-2.6.2-all.jar
+
+https://maven.aliyun.com/repository/public/net/mamoe/mirai-core-all/2.7-M1-dev-1/mirai-core-all-2.7-M1-dev-1-all.jar
+
+
+
 
 mirai console: internal/plugin/PluginManagerImpl.kt
 override val pluginsPath: Path = MiraiConsole.rootPath.resolve("plugins").apply { mkdir() }

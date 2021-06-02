@@ -1,6 +1,7 @@
 package org.mirai.zhao.dice.activity.ui.login
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -25,7 +26,7 @@ import org.mirai.zhao.dice.console.ConsoleService
 import org.mirai.zhao.dice.console.OnLogChangedListener
 
 class LoginActivity : AppCompatActivity() {
-    private lateinit var loginProcessPrint: TextView
+    //private lateinit var loginProcessPrint: TextView
     private lateinit var loginViewModel: LoginViewModel
     private var miraiProtocol:BotConfiguration.MiraiProtocol=BotConfiguration.MiraiProtocol.ANDROID_PHONE
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,10 +95,26 @@ class LoginActivity : AppCompatActivity() {
                 username.error = getString(loginState.usernameError)
             }
             if (loginState.passwordError != null) {
-                if (loginState.serverResult != null) {
-                    password.error = "服务器返回(" + loginState.serverResult + ")" + "\n" + getString(loginState.passwordError)
-                } else {
-                    password.error = getString(loginState.passwordError)
+                val str = getString(loginState.passwordError)
+                var lineNum =0
+                str.toCharArray().forEach { char->
+                    if(char=='\n'){
+                        lineNum++
+                    }
+                }
+                if(lineNum>2){
+                    val alterDialog = AlertDialog.Builder(this)
+                    alterDialog.setTitle("错误")
+                    alterDialog.setMessage(loginState.serverResult+'\n'+str)
+                    alterDialog.setPositiveButton("确定") { dialogInterface, _ -> dialogInterface.cancel() }
+                    alterDialog.show()
+                    password.error = "登陆出错"
+                }else{
+                    if (loginState.serverResult != null) {
+                        password.error = loginState.serverResult
+                    } else {
+                        password.error = str
+                    }
                 }
             }
             login.isEnabled = true

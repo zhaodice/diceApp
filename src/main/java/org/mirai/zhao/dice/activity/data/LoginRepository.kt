@@ -60,12 +60,16 @@ class LoginRepository() {
             val s=result.await()
             if(s.isEmpty()){
                 //等待机器人启动
-                while(!bot.isOnline){Thread.sleep(1000)}
+                while(!bot.isOnline){
+                    Thread.sleep(1000)
+                }
                 settingAutoLogin(qq,password)
-                return@runBlocking s;
+                return@runBlocking s
             }else{
-                return@runBlocking s;
+                bot.closeAndJoin()//登陆失败
+                return@runBlocking s
             }
         }
     }
+
 }
